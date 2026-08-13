@@ -417,6 +417,11 @@
             display: block;
         }
 
+        .account-item.en-negativo {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
         .aviso-copia {
             margin-top: 12px;
             padding: 10px 12px;
@@ -659,11 +664,13 @@
                 totalSaldo += cuenta.saldo;
                 const iconoTipo = cuenta.tipo === 'banco' ? '🏦' : cuenta.tipo === 'efectivo' ? '💵' : '💳';
                 
+                const claseSaldo = cuenta.saldo < 0 ? ' style="color:#ef4444;"' : '';
+
                 html += `
-                    <div class="account-item">
+                    <div class="account-item${cuenta.saldo < 0 ? ' en-negativo' : ''}">
                         <div class="account-info">
                             <h3>${iconoTipo} ${cuenta.nombre}</h3>
-                            <p>${fmt(cuenta.saldo)}</p>
+                            <p${claseSaldo}>${fmt(cuenta.saldo)}</p>
                             <p style="font-size: 12px; color: #999; margin-top: 5px;">Inicial: ${fmt(cuenta.saldoInicial)}</p>
                         </div>
                         <div class="account-actions">
@@ -675,7 +682,9 @@
             });
 
             list.innerHTML = html;
-            document.getElementById('totalSaldo').textContent = fmt(totalSaldo);
+            const elTotal = document.getElementById('totalSaldo');
+            elTotal.textContent = fmt(totalSaldo);
+            elTotal.style.color = totalSaldo < 0 ? '#ef4444' : '';
         }
 
         function editarCuenta(id) {
@@ -822,9 +831,16 @@
                     return;
                 }
 
-                if (tipo === 'gasto' && cuenta.saldo < monto) {
-                    mostrarMensaje('Saldo insuficiente en esta cuenta', 'error');
-                    return;
+                if (tipo === 'gasto' && cuenta.saldo < monto && cuenta.tipo !== 'tarjeta') {
+                    const resultante = cuenta.saldo - monto;
+                    const seguir = confirm(
+                        'Este gasto deja "' + cuenta.nombre + '" en negativo.\n\n' +
+                        'Saldo actual: ' + fmt(cuenta.saldo) + '\n' +
+                        'Gasto: ' + fmt(monto) + '\n' +
+                        'Quedaria en: ' + fmt(resultante) + '\n\n' +
+                        'Registrar de todas formas?'
+                    );
+                    if (!seguir) return;
                 }
 
                 const signo = tipo === 'gasto' ? -1 : 1;
@@ -856,9 +872,15 @@
                     return;
                 }
 
-                if (cuentaOrigen.saldo < monto) {
-                    mostrarMensaje('Saldo insuficiente en la cuenta origen', 'error');
-                    return;
+                if (cuentaOrigen.saldo < monto && cuentaOrigen.tipo !== 'tarjeta') {
+                    const seguir = confirm(
+                        'Este traspaso deja "' + cuentaOrigen.nombre + '" en negativo.\n\n' +
+                        'Saldo actual: ' + fmt(cuentaOrigen.saldo) + '\n' +
+                        'Traspaso: ' + fmt(monto) + '\n' +
+                        'Quedaria en: ' + fmt(cuentaOrigen.saldo - monto) + '\n\n' +
+                        'Continuar?'
+                    );
+                    if (!seguir) return;
                 }
 
                 cuentaOrigen.saldo -= monto;
