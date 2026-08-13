@@ -637,8 +637,10 @@
             guardarDatos();
             actualizarListaCuentas();
             actualizarFiltros();
+            actualizarFormulario();
+            actualizarAvisoCopia();
             cerrarModal();
-            mostrarMensaje('Cuenta creada correctamente', 'success');
+            mostrarMensaje('Cuenta creada. Ya puedes registrar movimientos en ella.', 'success');
         }
 
         function actualizarListaCuentas() {
@@ -710,7 +712,9 @@
                 guardarDatos();
                 actualizarListaCuentas();
                 actualizarFiltros();
+                actualizarFormulario();
                 aplicarFiltros();
+                actualizarAvisoCopia();
                 mostrarMensaje('Cuenta eliminada', 'success');
             }
         }
@@ -718,6 +722,18 @@
         function actualizarFormulario() {
             const tipo = document.getElementById('tipoMovimiento').value;
             let html = '';
+
+            if (cuentas.length === 0) {
+                document.getElementById('formularioMovimiento').innerHTML =
+                    '<div class="empty-state"><p>Primero crea al menos una cuenta con el boton <strong>+ Nueva Cuenta</strong> de arriba.</p></div>';
+                return;
+            }
+
+            if (tipo === 'traspaso' && cuentas.length < 2) {
+                document.getElementById('formularioMovimiento').innerHTML =
+                    '<div class="empty-state"><p>Para hacer traspasos necesitas al menos dos cuentas (por ejemplo un banco y la caja de efectivo).</p></div>';
+                return;
+            }
 
             if (tipo === 'gasto' || tipo === 'ingreso') {
                 html = `
@@ -866,6 +882,7 @@
             // Limpiar formulario
             document.getElementById('tipoMovimiento').value = 'gasto';
             actualizarFormulario();
+            actualizarAvisoCopia();
             mostrarMensaje('Movimiento registrado correctamente', 'success');
         }
 
