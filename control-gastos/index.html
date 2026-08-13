@@ -445,6 +445,46 @@
             background: #fef2f2;
         }
 
+        .saldo-barra {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .saldo-barra strong {
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .preview-saldo {
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .preview-saldo .flecha {
+            color: #999;
+            margin: 0 6px;
+        }
+
+        .preview-saldo .resultado {
+            font-weight: 700;
+        }
+
+        .preview-saldo .neg { color: #dc2626; }
+        .preview-saldo .pos { color: #059669; }
+
         .barra-sup {
             display: flex;
             align-items: center;
@@ -781,6 +821,10 @@
             <div class="barra-sup">
                 <button class="btn-volver" id="btnVolver" onclick="irAtras()">&#8592;</button>
                 <h1 id="tituloVista">Control de Gastos</h1>
+            </div>
+            <div class="saldo-barra" id="saldoBarra" onclick="mostrarVista('cuentas')">
+                <span>Saldo total</span>
+                <strong id="saldoBarraValor">0,00 &euro;</strong>
             </div>
             <div class="message" id="message"></div>
             <div class="aviso-copia" id="avisoCopia"></div>
@@ -1200,7 +1244,7 @@
             
             if (cuentas.length === 0) {
                 list.innerHTML = '<div class="empty-state"><p>No hay cuentas aún</p></div>';
-                ['totalSaldo', 'totalSaldo2'].forEach(id => {
+                ['totalSaldo', 'totalSaldo2', 'saldoBarraValor'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) { el.textContent = fmt(0); el.style.color = ''; }
                 });
@@ -1233,7 +1277,7 @@
             });
 
             list.innerHTML = html;
-            ['totalSaldo', 'totalSaldo2'].forEach(id => {
+            ['totalSaldo', 'totalSaldo2', 'saldoBarraValor'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.textContent = fmt(totalSaldo);
@@ -1320,6 +1364,7 @@
                             <input type="date" id="fecha" value="${new Date().toISOString().split('T')[0]}">
                         </div>
                     </div>
+                    <div class="preview-saldo" id="previewSaldo"></div>
                     <div class="form-group">
                         <label>Categoría</label>
                         <input type="text" id="categoria" list="listaCategorias" placeholder="Ej: Comida, Coche, Luz...">
@@ -1360,6 +1405,7 @@
                             <input type="date" id="fecha" value="${new Date().toISOString().split('T')[0]}">
                         </div>
                     </div>
+                    <div class="preview-saldo" id="previewSaldo"></div>
                     <div class="form-group">
                         <label>Descripción</label>
                         <input type="text" id="descripcion" placeholder="Ej: Traspaso a caja">
@@ -1369,6 +1415,103 @@
 
             document.getElementById('formularioMovimiento').innerHTML = html;
             rellenarFormulario();
+
+            // Recalcular la vista previa mientras se escribe
+            ['monto', 'cuentaMovimiento', 'cuentaOrigen', 'cuentaDestino'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', actualizarPreview);
+                el.addEventListener('change', actualizarPreview);
+            });
+
+            actualizarPreview();
+        }
+
+        // Saldo de una cuenta descontando el movimiento que se esta editando,
+        // para que la prevision no cuente dos veces el importe antiguo
+        function saldoBase(cuentaId) {
+            const cuenta = cuentas.find(c => c.id === cuentaId);
+            if (!cuenta) return 0;
+
+            let saldo = cuenta.saldo;
+            if (editandoId) {
+                const orig = movimientos.find(x => x.id === editandoId);
+                if (orig) {
+                    if (orig.tipo === 'gasto' && orig.cuenta === cuentaId) saldo += orig.monto;
+                    else if (orig.tipo === 'ingreso' && orig.cuenta === cuentaId) saldo -= orig.monto;
+                    else if (orig.tipo === 'traspaso') {
+                        if (orig.cuenta === cuentaId) saldo += orig.monto;
+                        if (orig.cuenta2 === cuentaId) saldo -= orig.monto;
+                    }
+                }
+            }
+            return saldo;
+        }
+
+        function lineaPreview(cuenta, antes, despues) {
+            const clase = despues < 0 ? 'neg' : 'pos';
+            return '<div><strong>' + cuenta.nombre + ':</strong> ' + fmt(antes) +
+                   '<span class="flecha">&#8594;</span>' +
+                   '<span class="resultado ' + clase + '">' + fmt(despues) + '</span></div>';
+        }
+
+        function actualizarPreview() {
+            const caja = document.getElementById('previewSaldo');
+            if (!caja) return;
+
+            const tipo = document.getElementById('tipoMovimiento').value;
+            const campoMonto = document.getElementById('monto');
+            const monto = campoMonto ? parseFloat(campoMonto.value) : NaN;
+
+            if (tipo === 'gasto' || tipo === 'ingreso') {
+                const sel = document.getElementById('cuentaMovimiento');
+                const cuenta = sel ? cuentas.find(c => c.id === parseInt(sel.value)) : null;
+
+                if (!cuenta) {
+                    caja.innerHTML = '<span style="color:#777;">Elige una cuenta para ver como queda el saldo.</span>';
+                    return;
+                }
+
+                const antes = saldoBase(cuenta.id);
+
+                if (!monto || monto <= 0) {
+                    caja.innerHTML = '<div><strong>' + cuenta.nombre + ':</strong> ' + fmt(antes) + ' disponibles</div>';
+                    return;
+                }
+
+                const despues = tipo === 'gasto' ? antes - monto : antes + monto;
+                caja.innerHTML = lineaPreview(cuenta, antes, despues) +
+                    (despues < 0 ? '<div style="color:#dc2626;margin-top:4px;">Esta cuenta quedaria en negativo.</div>' : '');
+
+            } else {
+                const selO = document.getElementById('cuentaOrigen');
+                const selD = document.getElementById('cuentaDestino');
+                const origen = selO ? cuentas.find(c => c.id === parseInt(selO.value)) : null;
+                const destino = selD ? cuentas.find(c => c.id === parseInt(selD.value)) : null;
+
+                if (!origen || !destino) {
+                    caja.innerHTML = '<span style="color:#777;">Elige las dos cuentas para ver como quedan los saldos.</span>';
+                    return;
+                }
+
+                if (origen.id === destino.id) {
+                    caja.innerHTML = '<span style="color:#dc2626;">El origen y el destino no pueden ser la misma cuenta.</span>';
+                    return;
+                }
+
+                const antesO = saldoBase(origen.id);
+                const antesD = saldoBase(destino.id);
+
+                if (!monto || monto <= 0) {
+                    caja.innerHTML = '<div><strong>' + origen.nombre + ':</strong> ' + fmt(antesO) + '</div>' +
+                                     '<div><strong>' + destino.nombre + ':</strong> ' + fmt(antesD) + '</div>';
+                    return;
+                }
+
+                caja.innerHTML = lineaPreview(origen, antesO, antesO - monto) +
+                                 lineaPreview(destino, antesD, antesD + monto) +
+                                 (antesO - monto < 0 ? '<div style="color:#dc2626;margin-top:4px;">El origen quedaria en negativo.</div>' : '');
+            }
         }
 
         // Aplica (signo 1) o deshace (signo -1) el efecto de un movimiento sobre los saldos
