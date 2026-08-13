@@ -417,6 +417,21 @@
             display: block;
         }
 
+        .aviso-copia {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            background: #f0f4ff;
+            color: #444;
+        }
+
+        .aviso-copia.alerta {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 500;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -434,10 +449,12 @@
             <h1>💰 Control de Gastos Personales</h1>
             <div class="header-actions">
                 <button class="btn-primary" onclick="abrirModalCuenta()">+ Nueva Cuenta</button>
-                <button class="btn-secondary" onclick="exportarDatos()">📥 Exportar</button>
-                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📤 Importar</button>
+                <button class="btn-success" onclick="exportarDatos()">💾 Guardar copia</button>
+                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Restaurar copia</button>
+                <button class="btn-secondary" onclick="exportarCSV()">📊 Excel (CSV)</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDatos()">
             </div>
+            <div class="aviso-copia" id="avisoCopia"></div>
         </header>
 
         <div class="main-grid">
@@ -557,6 +574,7 @@
             actualizarListaCuentas();
             actualizarFiltros();
             aplicarFiltros();
+            actualizarAvisoCopia();
 
             // Event listeners para filtros
             document.getElementById('filtroAccount').addEventListener('change', aplicarFiltros);
@@ -575,10 +593,14 @@
         }
 
         function guardarDatos() {
-            localStorage.setItem('controlGastos', JSON.stringify({
-                cuentas,
-                movimientos
-            }));
+            try {
+                localStorage.setItem('controlGastos', JSON.stringify({
+                    cuentas,
+                    movimientos
+                }));
+            } catch (error) {
+                alert('No se han podido guardar los datos en este navegador. Descarga una copia de seguridad ahora mismo para no perder nada.');
+            }
         }
 
         function abrirModalCuenta() {
@@ -965,47 +987,201 @@
             }, 3000);
         }
 
-        function exportarDatos() {
-            const datos = {
-                cuentas,
-                movimientos,
-                fechaExportacion: new Date().toISOString()
-            };
-            
-            const json = JSON.stringify(datos, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
+        function descargarArchivo(contenido, nombre, tipo) {
+            const blob = new Blob([contenido], { type: tipo });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `gastos_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = nombre;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
+        function selloFecha() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+        }
+
+        function exportarDatos() {
+            if (cuentas.length === 0 && movimientos.length === 0) {
+                mostrarMensaje('No hay nada que guardar todavia', 'error');
+                return;
+            }
+
+            const datos = {
+                version: 1,
+                aplicacion: 'control-gastos',
+                fechaExportacion: new Date().toISOString(),
+                cuentas,
+                movimientos
+            };
+
+            descargarArchivo(
+                JSON.stringify(datos, null, 2),
+                `copia-gastos_${selloFecha()}.json`,
+                'application/json'
+            );
+
+            localStorage.setItem('controlGastosUltimaCopia', new Date().toISOString());
+            actualizarAvisoCopia();
+            mostrarMensaje('Copia de seguridad descargada. Guardala en un sitio seguro.', 'success');
+        }
+
+        function exportarCSV() {
+            if (movimientos.length === 0) {
+                mostrarMensaje('No hay movimientos que exportar', 'error');
+                return;
+            }
+
+            const esc = t => '"' + String(t == null ? '' : t).replace(/"/g, '""') + '"';
+            const nombreCuenta = id => {
+                const c = cuentas.find(c => c.id === id);
+                return c ? c.nombre : '';
+            };
+
+            const filas = [['Fecha', 'Tipo', 'Descripcion', 'Cuenta', 'Cuenta destino', 'Importe'].join(';')];
+
+            movimientos
+                .slice()
+                .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+                .forEach(m => {
+                    filas.push([
+                        esc(new Date(m.fecha).toLocaleDateString('es-ES')),
+                        esc(m.tipo),
+                        esc(m.descripcion),
+                        esc(nombreCuenta(m.cuenta)),
+                        esc(m.cuenta2 ? nombreCuenta(m.cuenta2) : ''),
+                        esc(m.monto.toFixed(2).replace('.', ','))
+                    ].join(';'));
+                });
+
+            // BOM para que Excel reconozca los acentos
+            descargarArchivo('\uFEFF' + filas.join('\r\n'), `movimientos_${selloFecha()}.csv`, 'text/csv;charset=utf-8');
+            mostrarMensaje('CSV descargado (se abre con Excel)', 'success');
+        }
+
         function importarDatos() {
-            const file = document.getElementById('importFile').files[0];
+            const input = document.getElementById('importFile');
+            const file = input.files[0];
             if (!file) return;
 
             const reader = new FileReader();
+
             reader.onload = function(e) {
+                let datos;
                 try {
-                    const datos = JSON.parse(e.target.result);
-                    cuentas = datos.cuentas || [];
-                    movimientos = datos.movimientos || [];
-                    guardarDatos();
-                    actualizarListaCuentas();
-                    actualizarFiltros();
-                    aplicarFiltros();
-                    mostrarMensaje('Datos importados correctamente', 'success');
+                    datos = JSON.parse(e.target.result);
                 } catch (error) {
-                    mostrarMensaje('Error al importar los datos', 'error');
+                    mostrarMensaje('El archivo no es una copia valida (no se pudo leer)', 'error');
+                    return;
                 }
+
+                if (!datos || !Array.isArray(datos.cuentas) || !Array.isArray(datos.movimientos)) {
+                    mostrarMensaje('El archivo no tiene el formato de una copia de esta aplicacion', 'error');
+                    return;
+                }
+
+                const fechaCopia = datos.fechaExportacion
+                    ? new Date(datos.fechaExportacion).toLocaleString('es-ES')
+                    : 'desconocida';
+
+                const aviso =
+                    'Vas a restaurar una copia de seguridad.\n\n' +
+                    'La copia contiene:\n' +
+                    '  - ' + datos.cuentas.length + ' cuentas\n' +
+                    '  - ' + datos.movimientos.length + ' movimientos\n' +
+                    '  - Fecha de la copia: ' + fechaCopia + '\n\n' +
+                    'Ahora mismo tienes ' + cuentas.length + ' cuentas y ' + movimientos.length + ' movimientos.\n' +
+                    'TODOS los datos actuales se sustituiran por los de la copia.\n\n' +
+                    'Se guardara una copia de emergencia de tus datos actuales por si te arrepientes.\n\n' +
+                    'Continuar?';
+
+                if (!confirm(aviso)) {
+                    mostrarMensaje('Restauracion cancelada. No se ha cambiado nada.', 'success');
+                    return;
+                }
+
+                // Red de seguridad: guardamos lo que habia antes
+                localStorage.setItem('controlGastosAntesDeRestaurar', JSON.stringify({
+                    cuentas,
+                    movimientos,
+                    fecha: new Date().toISOString()
+                }));
+
+                cuentas = datos.cuentas;
+                movimientos = datos.movimientos;
+                guardarDatos();
+                actualizarListaCuentas();
+                actualizarFiltros();
+                actualizarFormulario();
+                aplicarFiltros();
+                actualizarAvisoCopia();
+                mostrarMensaje('Copia restaurada: ' + cuentas.length + ' cuentas y ' + movimientos.length + ' movimientos', 'success');
             };
+
+            reader.onerror = function() {
+                mostrarMensaje('No se pudo leer el archivo', 'error');
+            };
+
             reader.readAsText(file);
-            document.getElementById('importFile').value = '';
+            input.value = '';
         }
+
+        function deshacerRestauracion() {
+            const guardado = localStorage.getItem('controlGastosAntesDeRestaurar');
+            if (!guardado) return;
+
+            if (!confirm('Volver a los datos que tenias antes de restaurar la copia?')) return;
+
+            const previo = JSON.parse(guardado);
+            cuentas = previo.cuentas || [];
+            movimientos = previo.movimientos || [];
+            guardarDatos();
+            localStorage.removeItem('controlGastosAntesDeRestaurar');
+            actualizarListaCuentas();
+            actualizarFiltros();
+            actualizarFormulario();
+            aplicarFiltros();
+            actualizarAvisoCopia();
+            mostrarMensaje('Datos anteriores recuperados', 'success');
+        }
+
+        function actualizarAvisoCopia() {
+            const aviso = document.getElementById('avisoCopia');
+            const ultima = localStorage.getItem('controlGastosUltimaCopia');
+            const hayDatos = cuentas.length > 0 || movimientos.length > 0;
+            const puedeDeshacer = !!localStorage.getItem('controlGastosAntesDeRestaurar');
+
+            let texto = '';
+            let alerta = false;
+
+            if (!hayDatos) {
+                texto = 'Los datos se guardan solo en este navegador. Descarga una copia de vez en cuando.';
+            } else if (!ultima) {
+                texto = '&#9888; Todavia no has descargado ninguna copia de seguridad. Si pierdes este navegador, pierdes los datos.';
+                alerta = true;
+            } else {
+                const dias = Math.floor((Date.now() - new Date(ultima)) / 86400000);
+                const cuando = new Date(ultima).toLocaleDateString('es-ES');
+                if (dias >= 7) {
+                    texto = '&#9888; Tu ultima copia es del ' + cuando + ' (hace ' + dias + ' dias). Conviene guardar una nueva.';
+                    alerta = true;
+                } else {
+                    texto = 'Ultima copia guardada: ' + cuando + '.';
+                }
+            }
+
+            if (puedeDeshacer) {
+                texto += ' <a href="#" onclick="deshacerRestauracion(); return false;" style="color:#667eea;font-weight:600;">Deshacer la ultima restauracion</a>';
+            }
+
+            aviso.innerHTML = texto;
+            aviso.className = alerta ? 'aviso-copia alerta' : 'aviso-copia';
+        }
+
     </script>
 </body>
 </html>
