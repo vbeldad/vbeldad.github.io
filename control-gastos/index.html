@@ -303,6 +303,29 @@
             font-weight: 500;
         }
 
+        .aviso-edicion {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .cat-chip {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e0e7ff;
+            color: #4c51bf;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
         .badge-ingreso {
             background: #d1fae5;
             color: #065f46;
@@ -422,6 +445,251 @@
             background: #fef2f2;
         }
 
+        .barra-sup {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .barra-sup h1 {
+            margin-bottom: 0;
+            font-size: 20px;
+        }
+
+        .btn-volver {
+            background: #e0e7ff;
+            color: #667eea;
+            font-size: 20px;
+            line-height: 1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .btn-volver.visible {
+            display: block;
+        }
+
+        .vista {
+            display: none;
+        }
+
+        .vista.activa {
+            display: block;
+        }
+
+        .menu-principal {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            padding: 18px;
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .menu-btn:active {
+            background: #e0e7ff;
+        }
+
+        .menu-icono {
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .menu-texto {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .menu-texto strong {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .menu-texto small {
+            font-size: 13px;
+            color: #777;
+            font-weight: normal;
+        }
+
+        .btn-ancho {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 14px;
+            font-size: 15px;
+        }
+
+        .etiqueta-total {
+            display: block;
+            font-size: 13px;
+            font-weight: normal;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .texto-ayuda {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .periodos-rapidos {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .cabecera-informe {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 12px;
+            margin: 20px 0;
+        }
+
+        .cabecera-informe h2 {
+            margin-bottom: 4px;
+            font-size: 18px;
+        }
+
+        .cabecera-informe p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .tabla-informe {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .tabla-informe th,
+        .tabla-informe td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        .tabla-informe thead th {
+            background: #f8f9fa;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .tabla-informe tfoot td {
+            border-top: 2px solid #667eea;
+            border-bottom: none;
+            background: #f0f4ff;
+        }
+
+        .tabla-informe .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .tabla-informe .verde { color: #059669; }
+        .tabla-informe .rojo  { color: #dc2626; }
+
+        .tabla-detalle {
+            font-size: 13px;
+            margin-top: -8px;
+        }
+
+        .barra {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .barra span {
+            display: block;
+            height: 100%;
+            background: #667eea;
+        }
+
+        .bloque-cuenta {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .bloque-cuenta h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .nota-informe {
+            font-size: 12px;
+            color: #777;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        /* ===== IMPRESION / PDF ===== */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                color: #000;
+            }
+
+            header,
+            .no-imprimir,
+            .btn-volver,
+            .message,
+            .aviso-copia {
+                display: none !important;
+            }
+
+            .panel {
+                box-shadow: none;
+                padding: 0;
+                border-radius: 0;
+            }
+
+            .vista:not(.activa) {
+                display: none !important;
+            }
+
+            .tabla-informe {
+                font-size: 11pt;
+            }
+
+            .tabla-informe thead {
+                display: table-header-group;
+            }
+
+            .tabla-informe tr {
+                page-break-inside: avoid;
+            }
+
+            .cabecera-informe {
+                border-bottom: 2px solid #000;
+            }
+
+            .barra {
+                border: 1px solid #999;
+            }
+
+            .barra span {
+                background: #666;
+            }
+        }
+
         .aviso-copia {
             margin-top: 12px;
             padding: 10px 12px;
@@ -446,43 +714,148 @@
         .empty-state p {
             margin-bottom: 15px;
         }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 14px 16px;
+            }
+
+            .barra-sup h1 {
+                font-size: 17px;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .total-saldo {
+                font-size: 24px;
+                padding: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            /* Campos mas altos y sin zoom automatico al escribir */
+            input, select {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .movimiento-item {
+                grid-template-columns: 1fr auto;
+                gap: 10px;
+            }
+
+            .movimiento-actions {
+                grid-column: 2;
+            }
+
+            .account-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .account-actions button {
+                flex: 1;
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .movimientos-list {
+                max-height: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>💰 Control de Gastos Personales</h1>
-            <div class="header-actions">
-                <button class="btn-primary" onclick="abrirModalCuenta()">+ Nueva Cuenta</button>
-                <button class="btn-success" onclick="exportarDatos()">💾 Guardar copia</button>
-                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Restaurar copia</button>
-                <button class="btn-secondary" onclick="exportarCSV()">📊 Excel (CSV)</button>
-                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDatos()">
+            <div class="barra-sup">
+                <button class="btn-volver" id="btnVolver" onclick="irAtras()">&#8592;</button>
+                <h1 id="tituloVista">Control de Gastos</h1>
             </div>
+            <div class="message" id="message"></div>
             <div class="aviso-copia" id="avisoCopia"></div>
         </header>
 
-        <div class="main-grid">
-            <!-- Panel Izquierdo: Cuentas -->
+        <!-- ===== PANTALLA DE INICIO ===== -->
+        <div class="vista activa" id="vista-inicio">
             <div class="panel">
-                <h2>Mis Cuentas</h2>
                 <div class="total-saldo">
-                    Saldo Total: <span id="totalSaldo">0,00 &euro;</span>
+                    <span class="etiqueta-total">Saldo Total</span>
+                    <span id="totalSaldo">0,00 &euro;</span>
+                </div>
+                <div class="menu-principal">
+                    <button class="menu-btn" onclick="mostrarVista('registrar')">
+                        <span class="menu-icono">&#10133;</span>
+                        <span class="menu-texto">
+                            <strong>Nuevo movimiento</strong>
+                            <small>Gasto, ingreso o traspaso</small>
+                        </span>
+                    </button>
+                    <button class="menu-btn" onclick="mostrarVista('movimientos')">
+                        <span class="menu-icono">&#128203;</span>
+                        <span class="menu-texto">
+                            <strong>Ver movimientos</strong>
+                            <small id="resumenMovimientos">Historial y filtros</small>
+                        </span>
+                    </button>
+                    <button class="menu-btn" onclick="mostrarVista('informes')">
+                        <span class="menu-icono">&#128200;</span>
+                        <span class="menu-texto">
+                            <strong>Informes</strong>
+                            <small>Res&uacute;menes por mes, categor&iacute;a y cuenta</small>
+                        </span>
+                    </button>
+                    <button class="menu-btn" onclick="mostrarVista('cuentas')">
+                        <span class="menu-icono">&#127974;</span>
+                        <span class="menu-texto">
+                            <strong>Mis cuentas</strong>
+                            <small id="resumenCuentas">Saldos y nuevas cuentas</small>
+                        </span>
+                    </button>
+                    <button class="menu-btn" onclick="mostrarVista('copias')">
+                        <span class="menu-icono">&#128190;</span>
+                        <span class="menu-texto">
+                            <strong>Copias de seguridad</strong>
+                            <small>Guardar, restaurar y exportar</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CUENTAS ===== -->
+        <div class="vista" id="vista-cuentas">
+            <div class="panel">
+                <button class="btn-primary btn-ancho" onclick="abrirModalCuenta()">+ Nueva Cuenta</button>
+                <div class="total-saldo" style="margin-top:20px;">
+                    <span class="etiqueta-total">Saldo Total</span>
+                    <span id="totalSaldo2">0,00 &euro;</span>
                 </div>
                 <div class="account-list" id="accountList">
                     <div class="empty-state">
-                        <p>No hay cuentas aún</p>
+                        <p>No hay cuentas a&uacute;n</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Panel Derecho: Registrar Movimientos y Listado -->
-            <div class="panel movimientos-panel">
-                <h2>Registrar Movimiento</h2>
-                
-                <div class="message" id="message"></div>
-
-                <!-- Selector de tipo de movimiento -->
+        <!-- ===== REGISTRAR MOVIMIENTO ===== -->
+        <div class="vista" id="vista-registrar">
+            <div class="panel">
+                <div class="aviso-edicion" id="avisoEdicion" style="display:none;">
+                    <strong>Estas corrigiendo un movimiento.</strong>
+                    <button class="btn-secondary" onclick="cancelarEdicion()">Cancelar</button>
+                </div>
                 <div class="form-group">
                     <label>Tipo de Movimiento</label>
                     <select id="tipoMovimiento" onchange="actualizarFormulario()">
@@ -492,17 +865,18 @@
                     </select>
                 </div>
 
-                <!-- Formulario dinámico -->
                 <div id="formularioMovimiento"></div>
 
-                <button class="btn-primary" onclick="registrarMovimiento()" style="width: 100%; margin-top: 15px;">Registrar Movimiento</button>
+                <button class="btn-primary btn-ancho" onclick="registrarMovimiento()" id="btnRegistrar">Registrar Movimiento</button>
+            </div>
+        </div>
 
-                <hr style="margin: 25px 0; border: none; border-top: 1px solid #ddd;">
+        <!-- ===== MOVIMIENTOS ===== -->
+        <div class="vista" id="vista-movimientos">
+            <div class="panel">
+                <button class="btn-secondary btn-ancho" onclick="alternarFiltros()" id="btnFiltros">&#128269; Mostrar filtros</button>
 
-                <h2 style="margin-bottom: 15px;">Movimientos</h2>
-
-                <!-- Filtros -->
-                <div class="filters">
+                <div class="filters" id="cajaFiltros" style="display:none;">
                     <div>
                         <label>Filtrar por cuenta</label>
                         <select id="filtroAccount">
@@ -510,8 +884,8 @@
                         </select>
                     </div>
                     <div>
-                        <label>Búsqueda</label>
-                        <input type="text" id="busqueda" placeholder="Buscar descripción...">
+                        <label>B&uacute;squeda</label>
+                        <input type="text" id="busqueda" placeholder="Buscar descripci&oacute;n...">
                     </div>
                     <div>
                         <label>Desde</label>
@@ -520,6 +894,9 @@
                     <div>
                         <label>Hasta</label>
                         <input type="date" id="filtroHasta">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <button class="btn-secondary btn-ancho" onclick="limpiarFiltros()">Quitar filtros</button>
                     </div>
                 </div>
 
@@ -530,18 +907,70 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== INFORMES ===== -->
+        <div class="vista" id="vista-informes">
+            <div class="panel">
+                <div class="no-imprimir">
+                    <div class="form-group">
+                        <label>Tipo de informe</label>
+                        <select id="tipoInforme" onchange="generarInforme()">
+                            <option value="meses">Resumen por meses</option>
+                            <option value="categorias">Gastos por categor&iacute;a</option>
+                            <option value="cuentas">Estado de cada cuenta</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Periodo</label>
+                        <div class="periodos-rapidos">
+                            <button class="btn-secondary" onclick="periodoRapido('mes')">Este mes</button>
+                            <button class="btn-secondary" onclick="periodoRapido('mesAnterior')">Mes pasado</button>
+                            <button class="btn-secondary" onclick="periodoRapido('anio')">Este a&ntilde;o</button>
+                            <button class="btn-secondary" onclick="periodoRapido('todo')">Todo</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Desde</label>
+                            <input type="date" id="infDesde" onchange="generarInforme()">
+                        </div>
+                        <div class="form-group">
+                            <label>Hasta</label>
+                            <input type="date" id="infHasta" onchange="generarInforme()">
+                        </div>
+                    </div>
+
+                    <button class="btn-primary btn-ancho" onclick="imprimirInforme()">&#128424; Imprimir o guardar en PDF</button>
+                </div>
+
+                <div id="salidaInforme"></div>
+            </div>
+        </div>
+
+        <!-- ===== COPIAS DE SEGURIDAD ===== -->
+        <div class="vista" id="vista-copias">
+            <div class="panel">
+                <p class="texto-ayuda">Tus datos se guardan solo en este navegador. Descarga una copia para no perderlos si cambias de m&oacute;vil o borras el historial.</p>
+                <button class="btn-success btn-ancho" onclick="exportarDatos()">&#128190; Guardar copia</button>
+                <button class="btn-secondary btn-ancho" onclick="document.getElementById('importFile').click()">&#128193; Restaurar copia</button>
+                <button class="btn-secondary btn-ancho" onclick="exportarCSV()">&#128202; Exportar a Excel (CSV)</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarDatos()">
+            </div>
+        </div>
     </div>
 
     <!-- Modal para nueva cuenta -->
     <div class="modal" id="modalCuenta">
         <div class="modal-content">
-            <h3>Nueva Cuenta</h3>
+            <h3 id="tituloModalCuenta">Nueva Cuenta</h3>
             <div class="form-group">
                 <label>Nombre de la Cuenta</label>
                 <input type="text" id="nombreCuenta" placeholder="Ej: Cuenta Banco X, Caja de efectivo">
             </div>
             <div class="form-group">
-                <label>Saldo Inicial</label>
+                <label id="etiquetaSaldo">Saldo Inicial</label>
                 <input type="number" id="saldoInicial" placeholder="0.00" step="0.01">
             </div>
             <div class="form-group">
@@ -549,7 +978,7 @@
                 <select id="tipoCuenta">
                     <option value="banco">Banco</option>
                     <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta de Crédito</option>
+                    <option value="tarjeta">Tarjeta de Cr&eacute;dito</option>
                 </select>
             </div>
             <div class="modal-actions">
@@ -568,6 +997,93 @@
             }) + ' \u20AC';
         }
 
+        // Navegacion entre pantallas
+        const TITULOS = {
+            'inicio': 'Control de Gastos',
+            'cuentas': 'Mis Cuentas',
+            'registrar': 'Nuevo Movimiento',
+            'movimientos': 'Movimientos',
+            'informes': 'Informes',
+            'copias': 'Copias de Seguridad'
+        };
+
+        let vistaActual = 'inicio';
+
+        function mostrarVista(nombre) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            const destino = document.getElementById('vista-' + nombre);
+            if (!destino) return;
+            destino.classList.add('activa');
+            vistaActual = nombre;
+
+            document.getElementById('tituloVista').textContent = TITULOS[nombre] || 'Control de Gastos';
+            document.getElementById('btnVolver').classList.toggle('visible', nombre !== 'inicio');
+
+            // El aviso de copia solo estorba fuera del inicio y de copias
+            const aviso = document.getElementById('avisoCopia');
+            aviso.style.display = (nombre === 'inicio' || nombre === 'copias') ? '' : 'none';
+
+            if (nombre === 'registrar') actualizarFormulario();
+            if (nombre === 'movimientos') aplicarFiltros();
+            if (nombre === 'informes') { if (!document.getElementById('infDesde').value) periodoRapido('mes'); else generarInforme(); }
+            if (nombre === 'inicio') actualizarResumenInicio();
+
+            window.scrollTo(0, 0);
+        }
+
+        function irAtras() {
+            if (editandoId) {
+                editandoId = null;
+                borrador = null;
+                document.getElementById('tipoMovimiento').value = 'gasto';
+                actualizarFormulario();
+            }
+            mostrarVista('inicio');
+        }
+
+        function actualizarResumenInicio() {
+            const nCuentas = cuentas.length;
+            const nMov = movimientos.length;
+            document.getElementById('resumenCuentas').textContent =
+                nCuentas === 0 ? 'Crea tu primera cuenta' :
+                nCuentas === 1 ? '1 cuenta' : nCuentas + ' cuentas';
+            document.getElementById('resumenMovimientos').textContent =
+                nMov === 0 ? 'Todavia no hay movimientos' :
+                nMov === 1 ? '1 movimiento registrado' : nMov + ' movimientos registrados';
+        }
+
+        function alternarFiltros() {
+            const caja = document.getElementById('cajaFiltros');
+            const btn = document.getElementById('btnFiltros');
+            const oculto = caja.style.display === 'none';
+            caja.style.display = oculto ? 'grid' : 'none';
+            btn.innerHTML = oculto ? '\u2716 Ocultar filtros' : '\uD83D\uDD0D Mostrar filtros';
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroAccount').value = '';
+            document.getElementById('busqueda').value = '';
+            document.getElementById('filtroDesde').value = '';
+            document.getElementById('filtroHasta').value = '';
+            aplicarFiltros();
+        }
+
+        const CATEGORIAS_GASTO = ['Comida', 'Casa', 'Luz, agua, gas', 'Telefono e internet',
+            'Coche y transporte', 'Salud', 'Ropa', 'Ocio', 'Seguros', 'Impuestos', 'Otros'];
+        const CATEGORIAS_INGRESO = ['Nomina', 'Ventas', 'Alquileres', 'Devoluciones', 'Otros'];
+
+        function categoriasDisponibles(tipo) {
+            const base = tipo === 'ingreso' ? CATEGORIAS_INGRESO : CATEGORIAS_GASTO;
+            const usadas = movimientos
+                .filter(m => m.tipo === tipo && m.categoria)
+                .map(m => m.categoria);
+            return [...new Set([...base, ...usadas])].sort((a, b) => a.localeCompare(b, 'es'));
+        }
+
+        // Estado de edicion
+        let editandoId = null;
+        let borrador = null;
+
         // Estructura de datos
         let cuentas = [];
         let movimientos = [];
@@ -580,6 +1096,7 @@
             actualizarFiltros();
             aplicarFiltros();
             actualizarAvisoCopia();
+            mostrarVista('inicio');
 
             // Event listeners para filtros
             document.getElementById('filtroAccount').addEventListener('change', aplicarFiltros);
@@ -609,10 +1126,14 @@
         }
 
         function abrirModalCuenta() {
+            cuentaEditandoId = null;
+            document.getElementById('tituloModalCuenta').textContent = 'Nueva Cuenta';
+            document.getElementById('etiquetaSaldo').textContent = 'Saldo Inicial';
             document.getElementById('modalCuenta').classList.add('active');
         }
 
         function cerrarModal() {
+            cuentaEditandoId = null;
             document.getElementById('modalCuenta').classList.remove('active');
             document.getElementById('nombreCuenta').value = '';
             document.getElementById('saldoInicial').value = '';
@@ -625,27 +1146,53 @@
             const tipo = document.getElementById('tipoCuenta').value;
 
             if (!nombre) {
-                mostrarMensaje('Por favor ingresa un nombre para la cuenta', 'error');
+                mostrarMensaje('Por favor escribe un nombre para la cuenta', 'error');
                 return;
             }
 
-            const cuenta = {
-                id: Date.now(),
-                nombre,
-                saldo,
-                saldoInicial: saldo,
-                tipo,
-                fechaCreacion: new Date().toISOString()
-            };
+            if (cuentaEditandoId) {
+                const cuenta = cuentas.find(c => c.id === cuentaEditandoId);
+                if (!cuenta) return;
 
-            cuentas.push(cuenta);
+                cuenta.nombre = nombre;
+                cuenta.tipo = tipo;
+
+                // Si cambia el saldo a mano, dejamos constancia con un ajuste
+                const diferencia = saldo - cuenta.saldo;
+                if (Math.abs(diferencia) > 0.001) {
+                    cuenta.saldo = saldo;
+                    movimientos.push({
+                        id: Date.now(),
+                        tipo: 'ajuste',
+                        cuenta: cuenta.id,
+                        cuenta2: null,
+                        monto: diferencia,
+                        categoria: null,
+                        descripcion: 'Ajuste manual de saldo',
+                        fecha: new Date().toISOString().split('T')[0]
+                    });
+                }
+
+                mostrarMensaje('Cuenta actualizada', 'success');
+            } else {
+                cuentas.push({
+                    id: Date.now(),
+                    nombre,
+                    saldo,
+                    saldoInicial: saldo,
+                    tipo,
+                    fechaCreacion: new Date().toISOString()
+                });
+                mostrarMensaje('Cuenta creada. Ya puedes registrar movimientos en ella.', 'success');
+            }
+
             guardarDatos();
             actualizarListaCuentas();
             actualizarFiltros();
             actualizarFormulario();
+            aplicarFiltros();
             actualizarAvisoCopia();
             cerrarModal();
-            mostrarMensaje('Cuenta creada. Ya puedes registrar movimientos en ella.', 'success');
         }
 
         function actualizarListaCuentas() {
@@ -653,7 +1200,11 @@
             
             if (cuentas.length === 0) {
                 list.innerHTML = '<div class="empty-state"><p>No hay cuentas aún</p></div>';
-                document.getElementById('totalSaldo').textContent = fmt(0);
+                ['totalSaldo', 'totalSaldo2'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.textContent = fmt(0); el.style.color = ''; }
+                });
+                actualizarResumenInicio();
                 return;
             }
 
@@ -682,36 +1233,28 @@
             });
 
             list.innerHTML = html;
-            const elTotal = document.getElementById('totalSaldo');
-            elTotal.textContent = fmt(totalSaldo);
-            elTotal.style.color = totalSaldo < 0 ? '#ef4444' : '';
+            ['totalSaldo', 'totalSaldo2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = fmt(totalSaldo);
+                el.style.color = totalSaldo < 0 ? '#ef4444' : '';
+            });
+            actualizarResumenInicio();
         }
+
+        let cuentaEditandoId = null;
 
         function editarCuenta(id) {
             const cuenta = cuentas.find(c => c.id === id);
             if (!cuenta) return;
 
-            const nuevoSaldo = prompt(`Nuevo saldo para ${cuenta.nombre}:`, cuenta.saldo);
-            if (nuevoSaldo !== null) {
-                const diferencia = parseFloat(nuevoSaldo) - cuenta.saldo;
-                cuenta.saldo = parseFloat(nuevoSaldo);
-                
-                // Registrar ajuste automático
-                movimientos.push({
-                    id: Date.now(),
-                    tipo: 'ajuste',
-                    cuenta: cuenta.id,
-                    monto: diferencia,
-                    descripcion: 'Ajuste manual de saldo',
-                    fecha: new Date().toISOString(),
-                    cuenta2: null
-                });
-
-                guardarDatos();
-                actualizarListaCuentas();
-                aplicarFiltros();
-                mostrarMensaje('Cuenta actualizada correctamente', 'success');
-            }
+            cuentaEditandoId = id;
+            document.getElementById('nombreCuenta').value = cuenta.nombre;
+            document.getElementById('saldoInicial').value = cuenta.saldo;
+            document.getElementById('tipoCuenta').value = cuenta.tipo;
+            document.getElementById('tituloModalCuenta').textContent = 'Editar Cuenta';
+            document.getElementById('etiquetaSaldo').textContent = 'Saldo actual';
+            document.getElementById('modalCuenta').classList.add('active');
         }
 
         function eliminarCuenta(id) {
@@ -732,17 +1275,31 @@
             const tipo = document.getElementById('tipoMovimiento').value;
             let html = '';
 
+            const btnReg = document.getElementById('btnRegistrar');
+
             if (cuentas.length === 0) {
                 document.getElementById('formularioMovimiento').innerHTML =
-                    '<div class="empty-state"><p>Primero crea al menos una cuenta con el boton <strong>+ Nueva Cuenta</strong> de arriba.</p></div>';
+                    '<div class="empty-state"><p>Primero necesitas crear una cuenta.</p>' +
+                    '<button class="btn-primary btn-ancho" onclick="mostrarVista(\'cuentas\')">Ir a Mis Cuentas</button></div>';
+                if (btnReg) btnReg.style.display = 'none';
                 return;
             }
 
             if (tipo === 'traspaso' && cuentas.length < 2) {
                 document.getElementById('formularioMovimiento').innerHTML =
-                    '<div class="empty-state"><p>Para hacer traspasos necesitas al menos dos cuentas (por ejemplo un banco y la caja de efectivo).</p></div>';
+                    '<div class="empty-state"><p>Para hacer traspasos necesitas al menos dos cuentas (por ejemplo un banco y la caja de efectivo).</p>' +
+                    '<button class="btn-primary btn-ancho" onclick="mostrarVista(\'cuentas\')">Ir a Mis Cuentas</button></div>';
+                if (btnReg) btnReg.style.display = 'none';
                 return;
             }
+
+            if (btnReg) {
+                btnReg.style.display = '';
+                btnReg.textContent = editandoId ? 'Guardar cambios' : 'Registrar Movimiento';
+            }
+
+            const avisoEd = document.getElementById('avisoEdicion');
+            if (avisoEd) avisoEd.style.display = editandoId ? 'flex' : 'none';
 
             if (tipo === 'gasto' || tipo === 'ingreso') {
                 html = `
@@ -762,6 +1319,13 @@
                             <label>Fecha</label>
                             <input type="date" id="fecha" value="${new Date().toISOString().split('T')[0]}">
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" id="categoria" list="listaCategorias" placeholder="Ej: Comida, Coche, Luz...">
+                        <datalist id="listaCategorias">
+                            ${categoriasDisponibles(tipo).map(x => `<option value="${x}"></option>`).join('')}
+                        </datalist>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -804,16 +1368,85 @@
             }
 
             document.getElementById('formularioMovimiento').innerHTML = html;
+            rellenarFormulario();
+        }
+
+        // Aplica (signo 1) o deshace (signo -1) el efecto de un movimiento sobre los saldos
+        function aplicarEfecto(m, signo) {
+            const c1 = cuentas.find(c => c.id === m.cuenta);
+            const c2 = m.cuenta2 ? cuentas.find(c => c.id === m.cuenta2) : null;
+
+            if (m.tipo === 'gasto' && c1) c1.saldo -= m.monto * signo;
+            else if (m.tipo === 'ingreso' && c1) c1.saldo += m.monto * signo;
+            else if (m.tipo === 'ajuste' && c1) c1.saldo += m.monto * signo;
+            else if (m.tipo === 'traspaso') {
+                if (c1) c1.saldo -= m.monto * signo;
+                if (c2) c2.saldo += m.monto * signo;
+            }
+        }
+
+        function editarMovimiento(id) {
+            const m = movimientos.find(x => x.id === id);
+            if (!m) return;
+
+            if (m.tipo === 'ajuste') {
+                mostrarMensaje('Los ajustes de saldo no se editan. Borralo y corrige el saldo de la cuenta.', 'error');
+                return;
+            }
+
+            editandoId = id;
+            borrador = {
+                cuenta: m.cuenta,
+                cuenta2: m.cuenta2,
+                monto: m.monto,
+                fecha: m.fecha,
+                categoria: m.categoria || '',
+                descripcion: m.descripcion
+            };
+
+            document.getElementById('tipoMovimiento').value = m.tipo;
+            mostrarVista('registrar');
+        }
+
+        function cancelarEdicion() {
+            editandoId = null;
+            borrador = null;
+            document.getElementById('tipoMovimiento').value = 'gasto';
+            actualizarFormulario();
+            mostrarVista('movimientos');
+            mostrarMensaje('Edicion cancelada. No se ha cambiado nada.', 'success');
+        }
+
+        // Vuelca el borrador en los campos del formulario recien construido
+        function rellenarFormulario() {
+            if (!borrador) return;
+            const poner = (id, valor) => {
+                const el = document.getElementById(id);
+                if (el && valor !== undefined && valor !== null) el.value = valor;
+            };
+            poner('cuentaMovimiento', borrador.cuenta);
+            poner('cuentaOrigen', borrador.cuenta);
+            poner('cuentaDestino', borrador.cuenta2);
+            poner('monto', borrador.monto);
+            poner('fecha', borrador.fecha);
+            poner('categoria', borrador.categoria);
+            poner('descripcion', borrador.descripcion);
         }
 
         function registrarMovimiento() {
+            const campoMonto = document.getElementById('monto');
+            if (!campoMonto) {
+                mostrarMensaje('Primero crea una cuenta para poder registrar movimientos', 'error');
+                return;
+            }
+
             const tipo = document.getElementById('tipoMovimiento').value;
-            const monto = parseFloat(document.getElementById('monto').value);
+            const monto = parseFloat(campoMonto.value);
             const fecha = document.getElementById('fecha').value;
             const descripcion = document.getElementById('descripcion').value.trim();
 
             if (!monto || monto <= 0) {
-                mostrarMensaje('Por favor ingresa un monto válido', 'error');
+                mostrarMensaje('Por favor ingresa un importe valido', 'error');
                 return;
             }
 
@@ -822,90 +1455,114 @@
                 return;
             }
 
+            // Si estamos editando, quitamos primero el efecto antiguo para validar contra el saldo real
+            const original = editandoId ? movimientos.find(x => x.id === editandoId) : null;
+            const copiaOriginal = original ? JSON.parse(JSON.stringify(original)) : null;
+            if (original) aplicarEfecto(original, -1);
+
+            const abortar = () => {
+                if (copiaOriginal) aplicarEfecto(copiaOriginal, 1);
+            };
+
+            let nuevo;
+
             if (tipo === 'gasto' || tipo === 'ingreso') {
                 const cuentaId = parseInt(document.getElementById('cuentaMovimiento').value);
                 const cuenta = cuentas.find(c => c.id === cuentaId);
 
                 if (!cuenta) {
-                    mostrarMensaje('Por favor selecciona una cuenta válida', 'error');
+                    abortar();
+                    mostrarMensaje('Por favor selecciona una cuenta valida', 'error');
                     return;
                 }
 
                 if (tipo === 'gasto' && cuenta.saldo < monto && cuenta.tipo !== 'tarjeta') {
-                    const resultante = cuenta.saldo - monto;
                     const seguir = confirm(
                         'Este gasto deja "' + cuenta.nombre + '" en negativo.\n\n' +
                         'Saldo actual: ' + fmt(cuenta.saldo) + '\n' +
                         'Gasto: ' + fmt(monto) + '\n' +
-                        'Quedaria en: ' + fmt(resultante) + '\n\n' +
-                        'Registrar de todas formas?'
+                        'Quedaria en: ' + fmt(cuenta.saldo - monto) + '\n\n' +
+                        'Continuar?'
                     );
-                    if (!seguir) return;
+                    if (!seguir) { abortar(); return; }
                 }
 
-                const signo = tipo === 'gasto' ? -1 : 1;
-                cuenta.saldo += monto * signo;
+                const campoCat = document.getElementById('categoria');
+                const categoria = campoCat && campoCat.value.trim() ? campoCat.value.trim() : 'Sin categoria';
 
-                movimientos.push({
-                    id: Date.now(),
+                nuevo = {
+                    id: editandoId || Date.now(),
                     tipo,
                     cuenta: cuentaId,
+                    cuenta2: null,
                     monto,
+                    categoria,
                     descripcion: descripcion || (tipo === 'gasto' ? 'Gasto' : 'Ingreso'),
-                    fecha,
-                    cuenta2: null
-                });
+                    fecha
+                };
 
-            } else if (tipo === 'traspaso') {
-                const cuentaOrigenId = parseInt(document.getElementById('cuentaOrigen').value);
-                const cuentaDestinoId = parseInt(document.getElementById('cuentaDestino').value);
-                const cuentaOrigen = cuentas.find(c => c.id === cuentaOrigenId);
-                const cuentaDestino = cuentas.find(c => c.id === cuentaDestinoId);
+            } else {
+                const origenId = parseInt(document.getElementById('cuentaOrigen').value);
+                const destinoId = parseInt(document.getElementById('cuentaDestino').value);
+                const origen = cuentas.find(c => c.id === origenId);
+                const destino = cuentas.find(c => c.id === destinoId);
 
-                if (!cuentaOrigen || !cuentaDestino) {
-                    mostrarMensaje('Por favor selecciona cuentas válidas', 'error');
+                if (!origen || !destino) {
+                    abortar();
+                    mostrarMensaje('Por favor selecciona las dos cuentas', 'error');
                     return;
                 }
 
-                if (cuentaOrigen.id === cuentaDestino.id) {
+                if (origen.id === destino.id) {
+                    abortar();
                     mostrarMensaje('No puedes hacer un traspaso a la misma cuenta', 'error');
                     return;
                 }
 
-                if (cuentaOrigen.saldo < monto && cuentaOrigen.tipo !== 'tarjeta') {
+                if (origen.saldo < monto && origen.tipo !== 'tarjeta') {
                     const seguir = confirm(
-                        'Este traspaso deja "' + cuentaOrigen.nombre + '" en negativo.\n\n' +
-                        'Saldo actual: ' + fmt(cuentaOrigen.saldo) + '\n' +
+                        'Este traspaso deja "' + origen.nombre + '" en negativo.\n\n' +
+                        'Saldo actual: ' + fmt(origen.saldo) + '\n' +
                         'Traspaso: ' + fmt(monto) + '\n' +
-                        'Quedaria en: ' + fmt(cuentaOrigen.saldo - monto) + '\n\n' +
+                        'Quedaria en: ' + fmt(origen.saldo - monto) + '\n\n' +
                         'Continuar?'
                     );
-                    if (!seguir) return;
+                    if (!seguir) { abortar(); return; }
                 }
 
-                cuentaOrigen.saldo -= monto;
-                cuentaDestino.saldo += monto;
-
-                movimientos.push({
-                    id: Date.now(),
+                nuevo = {
+                    id: editandoId || Date.now(),
                     tipo: 'traspaso',
-                    cuenta: cuentaOrigenId,
-                    cuenta2: cuentaDestinoId,
+                    cuenta: origenId,
+                    cuenta2: destinoId,
                     monto,
-                    descripcion: descripcion || `Traspaso: ${cuentaOrigen.nombre} → ${cuentaDestino.nombre}`,
-                    fecha,
-                });
+                    categoria: null,
+                    descripcion: descripcion || ('Traspaso: ' + origen.nombre + ' -> ' + destino.nombre),
+                    fecha
+                };
             }
+
+            aplicarEfecto(nuevo, 1);
+
+            if (original) {
+                movimientos[movimientos.findIndex(x => x.id === editandoId)] = nuevo;
+            } else {
+                movimientos.push(nuevo);
+            }
+
+            const eraEdicion = !!original;
+            editandoId = null;
+            borrador = null;
 
             guardarDatos();
             actualizarListaCuentas();
             aplicarFiltros();
-            
-            // Limpiar formulario
+            actualizarAvisoCopia();
+
             document.getElementById('tipoMovimiento').value = 'gasto';
             actualizarFormulario();
-            actualizarAvisoCopia();
-            mostrarMensaje('Movimiento registrado correctamente', 'success');
+            mostrarVista(eraEdicion ? 'movimientos' : 'inicio');
+            mostrarMensaje(eraEdicion ? 'Movimiento corregido' : 'Movimiento registrado correctamente', 'success');
         }
 
         function eliminarMovimiento(id) {
@@ -999,6 +1656,7 @@
                         <div class="movimiento-info">
                             <h4>${m.descripcion} ${badge}</h4>
                             <div class="movimiento-meta">
+                                ${m.categoria && m.categoria !== 'Sin categoria' ? `<span class="cat-chip">${m.categoria}</span> ` : ''}
                                 ${cuenta ? `<strong>${cuenta.nombre}</strong>` : ''}
                                 ${cuenta2 ? ` → <strong>${cuenta2.nombre}</strong>` : ''}
                                 <span style="margin-left: 10px;">📅 ${fecha}</span>
@@ -1008,7 +1666,8 @@
                             ${signo} ${fmt(Math.abs(m.monto))}
                         </div>
                         <div class="movimiento-actions">
-                            <button class="btn-danger" onclick="eliminarMovimiento(${m.id})">×</button>
+                            ${m.tipo !== 'ajuste' ? `<button class="btn-secondary" onclick="editarMovimiento(${m.id})" title="Editar">✏️</button>` : ''}
+                            <button class="btn-danger" onclick="eliminarMovimiento(${m.id})" title="Eliminar">🗑</button>
                         </div>
                     </div>
                 `;
@@ -1024,6 +1683,230 @@
             setTimeout(() => {
                 msg.className = 'message';
             }, 3000);
+        }
+
+
+        // ============ INFORMES ============
+        const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+        function periodoRapido(cual) {
+            const hoy = new Date();
+            const iso = d => d.toISOString().split('T')[0];
+            let desde, hasta;
+
+            if (cual === 'mes') {
+                desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                hasta = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            } else if (cual === 'mesAnterior') {
+                desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+                hasta = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+            } else if (cual === 'anio') {
+                desde = new Date(hoy.getFullYear(), 0, 1);
+                hasta = new Date(hoy.getFullYear(), 11, 31);
+            } else {
+                document.getElementById('infDesde').value = '';
+                document.getElementById('infHasta').value = '';
+                generarInforme();
+                return;
+            }
+
+            document.getElementById('infDesde').value = iso(desde);
+            document.getElementById('infHasta').value = iso(hasta);
+            generarInforme();
+        }
+
+        function movimientosDelPeriodo() {
+            const desde = document.getElementById('infDesde').value;
+            const hasta = document.getElementById('infHasta').value;
+            return movimientos.filter(m => {
+                if (desde && m.fecha < desde) return false;
+                if (hasta && m.fecha > hasta) return false;
+                return true;
+            });
+        }
+
+        function textoPeriodo() {
+            const desde = document.getElementById('infDesde').value;
+            const hasta = document.getElementById('infHasta').value;
+            const f = s => new Date(s).toLocaleDateString('es-ES');
+            if (!desde && !hasta) return 'Todos los movimientos';
+            if (desde && hasta) return 'Del ' + f(desde) + ' al ' + f(hasta);
+            if (desde) return 'Desde el ' + f(desde);
+            return 'Hasta el ' + f(hasta);
+        }
+
+        function generarInforme() {
+            const tipo = document.getElementById('tipoInforme').value;
+            const datos = movimientosDelPeriodo();
+            const salida = document.getElementById('salidaInforme');
+
+            let html = '<div class="cabecera-informe">' +
+                '<h2>' + document.getElementById('tipoInforme').selectedOptions[0].text + '</h2>' +
+                '<p>' + textoPeriodo() + '</p></div>';
+
+            if (datos.length === 0) {
+                salida.innerHTML = html + '<div class="empty-state"><p>No hay movimientos en este periodo.</p></div>';
+                return;
+            }
+
+            if (tipo === 'meses') html += informePorMeses(datos);
+            else if (tipo === 'categorias') html += informePorCategorias(datos);
+            else html += informePorCuentas(datos);
+
+            salida.innerHTML = html;
+        }
+
+        // --- 1. Resumen por meses ---
+        function informePorMeses(datos) {
+            const porMes = {};
+
+            datos.forEach(m => {
+                // Los traspasos mueven dinero entre cuentas propias: no son ingreso ni gasto
+                if (m.tipo === 'traspaso') return;
+                const d = new Date(m.fecha);
+                const clave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                if (!porMes[clave]) porMes[clave] = { ingresos: 0, gastos: 0, nombre: MESES[d.getMonth()] + ' ' + d.getFullYear() };
+                if (m.tipo === 'ingreso') porMes[clave].ingresos += m.monto;
+                else if (m.tipo === 'gasto') porMes[clave].gastos += m.monto;
+                else if (m.tipo === 'ajuste') {
+                    if (m.monto >= 0) porMes[clave].ingresos += m.monto;
+                    else porMes[clave].gastos += Math.abs(m.monto);
+                }
+            });
+
+            const claves = Object.keys(porMes).sort();
+            if (claves.length === 0) return '<div class="empty-state"><p>Solo hay traspasos en este periodo.</p></div>';
+
+            let totI = 0, totG = 0;
+            let filas = '';
+
+            claves.forEach(k => {
+                const m = porMes[k];
+                const dif = m.ingresos - m.gastos;
+                totI += m.ingresos;
+                totG += m.gastos;
+                filas += '<tr>' +
+                    '<td>' + m.nombre + '</td>' +
+                    '<td class="num verde">' + fmt(m.ingresos) + '</td>' +
+                    '<td class="num rojo">' + fmt(m.gastos) + '</td>' +
+                    '<td class="num ' + (dif >= 0 ? 'verde' : 'rojo') + '"><strong>' + fmt(dif) + '</strong></td>' +
+                    '</tr>';
+            });
+
+            const difTotal = totI - totG;
+
+            return '<table class="tabla-informe">' +
+                '<thead><tr><th>Mes</th><th class="num">Entradas</th><th class="num">Salidas</th><th class="num">Diferencia</th></tr></thead>' +
+                '<tbody>' + filas + '</tbody>' +
+                '<tfoot><tr>' +
+                '<td><strong>TOTAL</strong></td>' +
+                '<td class="num verde"><strong>' + fmt(totI) + '</strong></td>' +
+                '<td class="num rojo"><strong>' + fmt(totG) + '</strong></td>' +
+                '<td class="num ' + (difTotal >= 0 ? 'verde' : 'rojo') + '"><strong>' + fmt(difTotal) + '</strong></td>' +
+                '</tr></tfoot></table>' +
+                '<p class="nota-informe">Los traspasos entre tus cuentas no cuentan como entrada ni como salida, porque el dinero no sale de tu bolsillo.</p>';
+        }
+
+        // --- 2. Gastos por categoria ---
+        function informePorCategorias(datos) {
+            const gastos = datos.filter(m => m.tipo === 'gasto');
+            if (gastos.length === 0) return '<div class="empty-state"><p>No hay gastos en este periodo.</p></div>';
+
+            const porCat = {};
+            let total = 0;
+
+            gastos.forEach(m => {
+                const cat = m.categoria || 'Sin categoria';
+                if (!porCat[cat]) porCat[cat] = { total: 0, veces: 0 };
+                porCat[cat].total += m.monto;
+                porCat[cat].veces++;
+                total += m.monto;
+            });
+
+            const orden = Object.keys(porCat).sort((a, b) => porCat[b].total - porCat[a].total);
+            let filas = '';
+
+            orden.forEach(cat => {
+                const d = porCat[cat];
+                const pct = total > 0 ? (d.total / total * 100) : 0;
+                filas += '<tr>' +
+                    '<td>' + cat + '<div class="barra"><span style="width:' + pct.toFixed(1) + '%"></span></div></td>' +
+                    '<td class="num">' + d.veces + '</td>' +
+                    '<td class="num">' + pct.toFixed(1) + '%</td>' +
+                    '<td class="num rojo"><strong>' + fmt(d.total) + '</strong></td>' +
+                    '</tr>';
+            });
+
+            return '<table class="tabla-informe">' +
+                '<thead><tr><th>Categoria</th><th class="num">N&ordm;</th><th class="num">%</th><th class="num">Importe</th></tr></thead>' +
+                '<tbody>' + filas + '</tbody>' +
+                '<tfoot><tr><td><strong>TOTAL GASTOS</strong></td><td class="num"><strong>' + gastos.length + '</strong></td>' +
+                '<td class="num"><strong>100%</strong></td><td class="num rojo"><strong>' + fmt(total) + '</strong></td></tr></tfoot></table>';
+        }
+
+        // --- 3. Estado de cada cuenta ---
+        function informePorCuentas(datos) {
+            if (cuentas.length === 0) return '<div class="empty-state"><p>No hay cuentas creadas.</p></div>';
+
+            let html = '';
+
+            cuentas.forEach(cuenta => {
+                const suyos = datos.filter(m => m.cuenta === cuenta.id || m.cuenta2 === cuenta.id);
+
+                let entra = 0, sale = 0, recibe = 0, envia = 0;
+                suyos.forEach(m => {
+                    if (m.tipo === 'ingreso' && m.cuenta === cuenta.id) entra += m.monto;
+                    else if (m.tipo === 'gasto' && m.cuenta === cuenta.id) sale += m.monto;
+                    else if (m.tipo === 'traspaso') {
+                        if (m.cuenta === cuenta.id) envia += m.monto;
+                        if (m.cuenta2 === cuenta.id) recibe += m.monto;
+                    } else if (m.tipo === 'ajuste' && m.cuenta === cuenta.id) {
+                        if (m.monto >= 0) entra += m.monto; else sale += Math.abs(m.monto);
+                    }
+                });
+
+                const icono = cuenta.tipo === 'banco' ? '&#127974;' : cuenta.tipo === 'efectivo' ? '&#128181;' : '&#128179;';
+
+                html += '<div class="bloque-cuenta">' +
+                    '<h3>' + icono + ' ' + cuenta.nombre + '</h3>' +
+                    '<table class="tabla-informe">' +
+                    '<tbody>' +
+                    '<tr><td>Ingresos</td><td class="num verde">' + fmt(entra) + '</td></tr>' +
+                    '<tr><td>Gastos</td><td class="num rojo">' + fmt(sale) + '</td></tr>' +
+                    '<tr><td>Traspasos recibidos</td><td class="num">' + fmt(recibe) + '</td></tr>' +
+                    '<tr><td>Traspasos enviados</td><td class="num">' + fmt(envia) + '</td></tr>' +
+                    '<tr><td><strong>Saldo actual</strong></td><td class="num ' + (cuenta.saldo < 0 ? 'rojo' : '') + '"><strong>' + fmt(cuenta.saldo) + '</strong></td></tr>' +
+                    '</tbody></table>';
+
+                if (suyos.length > 0) {
+                    let lineas = '';
+                    suyos.slice().sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).forEach(m => {
+                        let signo = '';
+                        if (m.tipo === 'ingreso') signo = '+';
+                        else if (m.tipo === 'gasto') signo = '-';
+                        else if (m.tipo === 'traspaso') signo = (m.cuenta === cuenta.id) ? '-' : '+';
+                        lineas += '<tr>' +
+                            '<td>' + new Date(m.fecha).toLocaleDateString('es-ES') + '</td>' +
+                            '<td>' + m.descripcion + '</td>' +
+                            '<td class="num">' + signo + ' ' + fmt(Math.abs(m.monto)) + '</td>' +
+                            '</tr>';
+                    });
+                    html += '<table class="tabla-informe tabla-detalle">' +
+                        '<thead><tr><th>Fecha</th><th>Concepto</th><th class="num">Importe</th></tr></thead>' +
+                        '<tbody>' + lineas + '</tbody></table>';
+                } else {
+                    html += '<p class="nota-informe">Sin movimientos en este periodo.</p>';
+                }
+
+                html += '</div>';
+            });
+
+            return html;
+        }
+
+        function imprimirInforme() {
+            window.print();
         }
 
         function descargarArchivo(contenido, nombre, tipo) {
@@ -1081,7 +1964,7 @@
                 return c ? c.nombre : '';
             };
 
-            const filas = [['Fecha', 'Tipo', 'Descripcion', 'Cuenta', 'Cuenta destino', 'Importe'].join(';')];
+            const filas = [['Fecha', 'Tipo', 'Categoria', 'Descripcion', 'Cuenta', 'Cuenta destino', 'Importe'].join(';')];
 
             movimientos
                 .slice()
@@ -1090,6 +1973,7 @@
                     filas.push([
                         esc(new Date(m.fecha).toLocaleDateString('es-ES')),
                         esc(m.tipo),
+                        esc(m.categoria || ''),
                         esc(m.descripcion),
                         esc(nombreCuenta(m.cuenta)),
                         esc(m.cuenta2 ? nombreCuenta(m.cuenta2) : ''),
