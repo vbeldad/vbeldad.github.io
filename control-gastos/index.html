@@ -2135,10 +2135,11 @@
                 else if (m.tipo === 'ingreso') { signo = '+'; clase = 'ingreso'; }
                 else if (m.tipo === 'ajuste') { signo = m.monto >= 0 ? '+' : '-'; clase = m.monto >= 0 ? 'ingreso' : 'gasto'; }
                 else if (m.tipo === 'traspaso') {
-                    clase = 'traspaso';
-                    if (idCta && m.cuenta === idCta) signo = '-';
-                    else if (idCta && m.cuenta2 === idCta) signo = '+';
-                    else signo = '';
+                    // Un traspaso es salida en la cuenta de origen y entrada en la de destino,
+                    // asi que el color depende de la cuenta desde la que se mira
+                    if (idCta && m.cuenta === idCta) { signo = '-'; clase = 'gasto'; }
+                    else if (idCta && m.cuenta2 === idCta) { signo = '+'; clase = 'ingreso'; }
+                    else { signo = ''; clase = 'traspaso'; }
                 }
 
                 const saldo = acumulado[m.id];
