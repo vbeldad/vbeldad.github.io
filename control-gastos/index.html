@@ -395,6 +395,50 @@
             font-weight: 400;
         }
 
+        .caja-grafico {
+            margin: 10px 0 20px;
+            overflow-x: auto;
+        }
+
+        .grafico {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-width: 320px;
+        }
+
+        .leyenda-grafico {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .item-leyenda {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .item-leyenda.apagada {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .punto-leyenda {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
         .barra-lista {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -897,6 +941,21 @@
                 display: none !important;
             }
 
+            .item-leyenda {
+                border: none;
+                background: none;
+                padding: 2px 8px;
+            }
+
+            .item-leyenda.apagada {
+                display: none;
+            }
+
+            .caja-grafico {
+                overflow: visible;
+                page-break-inside: avoid;
+            }
+
             .cartilla-fila {
                 grid-template-columns: 1fr 90px 100px;
                 page-break-inside: avoid;
@@ -1191,6 +1250,7 @@
                             <option value="meses">Resumen por meses</option>
                             <option value="categorias">Gastos por categor&iacute;a</option>
                             <option value="cuentas">Estado de cada cuenta</option>
+                            <option value="evolucion">Gr&aacute;fico de evoluci&oacute;n</option>
                         </select>
                     </div>
 
@@ -2247,13 +2307,14 @@
                 '<h2>' + document.getElementById('tipoInforme').selectedOptions[0].text + '</h2>' +
                 '<p>' + textoPeriodo() + '</p></div>';
 
-            if (datos.length === 0) {
+            if (datos.length === 0 && tipo !== 'evolucion') {
                 salida.innerHTML = html + '<div class="empty-state"><p>No hay movimientos en este periodo.</p></div>';
                 return;
             }
 
             if (tipo === 'meses') html += informePorMeses(datos);
             else if (tipo === 'categorias') html += informePorCategorias(datos);
+            else if (tipo === 'evolucion') html += informeEvolucion();
             else html += informePorCuentas(datos);
 
             salida.innerHTML = html;
@@ -2405,6 +2466,200 @@
             });
 
             return html;
+        }
+
+
+        // ===== GRAFICO DE EVOLUCION =====
+        const COLORES = ['#667eea', '#059669', '#dc2626', '#d97706', '#7c3aed', '#0891b2', '#be185d'];
+        let lineasOcultas = {};
+
+        function alternarLinea(clave) {
+            lineasOcultas[clave] = !lineasOcultas[clave];
+            generarInforme();
+        }
+
+        // Serie de saldos de una cuenta (o del total si cuentaId es null)
+        function serieSaldos(cuentaId, desde, hasta) {
+            const orden = movimientos.slice().sort((a, b) => {
+                const d = new Date(a.fecha) - new Date(b.fecha);
+                return d !== 0 ? d : a.id - b.id;
+            });
+
+            let saldo = cuentaId
+                ? (cuentas.find(c => c.id === cuentaId) || {}).saldoInicial || 0
+                : cuentas.reduce((a, c) => a + (c.saldoInicial || 0), 0);
+
+            const efecto = m => {
+                if (cuentaId) {
+                    if (m.tipo === 'gasto' && m.cuenta === cuentaId) return -m.monto;
+                    if (m.tipo === 'ingreso' && m.cuenta === cuentaId) return m.monto;
+                    if (m.tipo === 'ajuste' && m.cuenta === cuentaId) return m.monto;
+                    if (m.tipo === 'traspaso') {
+                        if (m.cuenta === cuentaId) return -m.monto;
+                        if (m.cuenta2 === cuentaId) return m.monto;
+                    }
+                    return 0;
+                }
+                // Total: los traspasos no lo alteran
+                if (m.tipo === 'gasto') return -m.monto;
+                if (m.tipo === 'ingreso') return m.monto;
+                if (m.tipo === 'ajuste') return m.monto;
+                return 0;
+            };
+
+            // Arrastrar todo lo anterior al inicio del periodo
+            orden.filter(m => desde && m.fecha < desde).forEach(m => { saldo += efecto(m); });
+
+            const puntos = [{ fecha: desde || (orden.length ? orden[0].fecha : hoyISO()), saldo }];
+
+            orden.filter(m => (!desde || m.fecha >= desde) && (!hasta || m.fecha <= hasta))
+                 .forEach(m => {
+                     saldo += efecto(m);
+                     puntos.push({ fecha: m.fecha, saldo });
+                 });
+
+            puntos.push({ fecha: hasta || hoyISO(), saldo });
+            return puntos;
+        }
+
+        function hoyISO() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function informeEvolucion() {
+            if (cuentas.length === 0) {
+                return '<div class="empty-state"><p>Todavia no hay cuentas que representar.</p></div>';
+            }
+
+            const desde = document.getElementById('infDesde').value;
+            const hasta = document.getElementById('infHasta').value;
+
+            // Una linea por cuenta y otra para el total
+            const series = [];
+            cuentas.forEach((cuenta, i) => {
+                series.push({
+                    clave: 'c' + cuenta.id,
+                    nombre: cuenta.nombre,
+                    color: COLORES[i % COLORES.length],
+                    puntos: serieSaldos(cuenta.id, desde, hasta),
+                    grosor: 2
+                });
+            });
+            series.push({
+                clave: 'total',
+                nombre: 'TOTAL',
+                color: '#111827',
+                puntos: serieSaldos(null, desde, hasta),
+                grosor: 3
+            });
+
+            const visibles = series.filter(s => !lineasOcultas[s.clave]);
+
+            // Leyenda: cada nombre apaga o enciende su linea
+            let leyenda = '<div class="leyenda-grafico no-imprimir-parcial">';
+            series.forEach(s => {
+                const apagada = lineasOcultas[s.clave] ? ' apagada' : '';
+                leyenda += '<button class="item-leyenda' + apagada + '" onclick="alternarLinea(\'' + s.clave + '\')">' +
+                    '<span class="punto-leyenda" style="background:' + s.color + '"></span>' +
+                    s.nombre + '</button>';
+            });
+            leyenda += '</div>';
+
+            if (visibles.length === 0) {
+                return leyenda + '<div class="empty-state"><p>Has ocultado todas las lineas. Pulsa un nombre para volver a mostrarla.</p></div>';
+            }
+
+            return leyenda + dibujarGrafico(visibles) + tablaResumenEvolucion(series);
+        }
+
+        function dibujarGrafico(series) {
+            const W = 760, H = 380;
+            const M = { arriba: 20, derecha: 20, abajo: 46, izquierda: 76 };
+            const ancho = W - M.izquierda - M.derecha;
+            const alto = H - M.arriba - M.abajo;
+
+            const todos = series.flatMap(s => s.puntos);
+            const tiempos = todos.map(p => new Date(p.fecha).getTime());
+            let tMin = Math.min(...tiempos), tMax = Math.max(...tiempos);
+            if (tMin === tMax) { tMin -= 86400000; tMax += 86400000; }
+
+            const saldos = todos.map(p => p.saldo);
+            let yMin = Math.min(...saldos, 0);
+            let yMax = Math.max(...saldos, 0);
+            if (yMin === yMax) { yMin -= 10; yMax += 10; }
+            const margen = (yMax - yMin) * 0.1;
+            yMin -= margen; yMax += margen;
+
+            const x = t => M.izquierda + (new Date(t).getTime() - tMin) / (tMax - tMin) * ancho;
+            const y = v => M.arriba + (yMax - v) / (yMax - yMin) * alto;
+
+            let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="grafico" xmlns="http://www.w3.org/2000/svg">';
+
+            // Rejilla horizontal con sus importes
+            const nLineas = 5;
+            for (let i = 0; i <= nLineas; i++) {
+                const valor = yMin + (yMax - yMin) * i / nLineas;
+                const py = y(valor);
+                svg += '<line x1="' + M.izquierda + '" y1="' + py.toFixed(1) + '" x2="' + (W - M.derecha) + '" y2="' + py.toFixed(1) + '" stroke="#e5e7eb" stroke-width="1"/>';
+                svg += '<text x="' + (M.izquierda - 8) + '" y="' + (py + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="#666">' +
+                       Math.round(valor).toLocaleString('es-ES') + '</text>';
+            }
+
+            // Linea del cero, si el grafico la cruza
+            if (yMin < 0 && yMax > 0) {
+                svg += '<line x1="' + M.izquierda + '" y1="' + y(0).toFixed(1) + '" x2="' + (W - M.derecha) + '" y2="' + y(0).toFixed(1) + '" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4,3"/>';
+            }
+
+            // Fechas del eje horizontal
+            const fechaCorta = t => new Date(t).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+            [0, 0.5, 1].forEach(f => {
+                const t = tMin + (tMax - tMin) * f;
+                svg += '<text x="' + x(t).toFixed(1) + '" y="' + (H - M.abajo + 20) + '" text-anchor="middle" font-size="11" fill="#666">' + fechaCorta(t) + '</text>';
+            });
+
+            // Ejes
+            svg += '<line x1="' + M.izquierda + '" y1="' + M.arriba + '" x2="' + M.izquierda + '" y2="' + (H - M.abajo) + '" stroke="#9ca3af" stroke-width="1"/>';
+            svg += '<line x1="' + M.izquierda + '" y1="' + (H - M.abajo) + '" x2="' + (W - M.derecha) + '" y2="' + (H - M.abajo) + '" stroke="#9ca3af" stroke-width="1"/>';
+
+            // Las lineas: en escalon, porque el saldo se mantiene hasta el siguiente movimiento
+            series.forEach(s => {
+                let d = '';
+                s.puntos.forEach((p, i) => {
+                    const px = x(p.fecha), py = y(p.saldo);
+                    if (i === 0) d += 'M' + px.toFixed(1) + ',' + py.toFixed(1);
+                    else d += ' L' + px.toFixed(1) + ',' + y(s.puntos[i - 1].saldo).toFixed(1) +
+                              ' L' + px.toFixed(1) + ',' + py.toFixed(1);
+                });
+                svg += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + s.grosor + '" stroke-linejoin="round"/>';
+
+                // Punto final destacado con su importe
+                const ult = s.puntos[s.puntos.length - 1];
+                svg += '<circle cx="' + x(ult.fecha).toFixed(1) + '" cy="' + y(ult.saldo).toFixed(1) + '" r="3.5" fill="' + s.color + '"/>';
+            });
+
+            svg += '</svg>';
+            return '<div class="caja-grafico">' + svg + '</div>';
+        }
+
+        function tablaResumenEvolucion(series) {
+            let filas = '';
+            series.forEach(s => {
+                const ini = s.puntos[0].saldo;
+                const fin = s.puntos[s.puntos.length - 1].saldo;
+                const dif = fin - ini;
+                filas += '<tr>' +
+                    '<td><span class="punto-leyenda" style="background:' + s.color + '"></span> ' + s.nombre + '</td>' +
+                    '<td class="num">' + fmt(ini) + '</td>' +
+                    '<td class="num">' + fmt(fin) + '</td>' +
+                    '<td class="num ' + (dif >= 0 ? 'verde' : 'rojo') + '"><strong>' + (dif >= 0 ? '+' : '') + fmt(dif) + '</strong></td>' +
+                    '</tr>';
+            });
+
+            return '<table class="tabla-informe">' +
+                '<thead><tr><th>Cuenta</th><th class="num">Al inicio</th><th class="num">Al final</th><th class="num">Diferencia</th></tr></thead>' +
+                '<tbody>' + filas + '</tbody></table>' +
+                '<p class="nota-informe">El saldo arrastra todo el historial anterior, no empieza de cero al principio del periodo. ' +
+                'En la linea del TOTAL los traspasos no influyen, porque el dinero solo cambia de cuenta.</p>';
         }
 
         function imprimirInforme() {
