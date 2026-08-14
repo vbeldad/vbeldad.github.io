@@ -316,6 +316,85 @@
             font-size: 14px;
         }
 
+        .saldos-cuentas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .saldo-cuenta-fila {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+        }
+
+        .saldo-cuenta-fila:active {
+            background: #e0e7ff;
+        }
+
+        .saldo-cuenta-fila.negativo {
+            border-left-color: #ef4444;
+        }
+
+        .saldo-cuenta-nombre {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .saldo-cuenta-valor {
+            font-size: 17px;
+            font-weight: 700;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        .saldo-cuenta-valor.negativo {
+            color: #dc2626;
+        }
+
+        .chips-cuentas {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .chip-cuenta {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #f0f4ff;
+            color: #4c51bf;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .chip-cuenta.activo {
+            background: #667eea;
+            color: white;
+        }
+
+        .chip-saldo {
+            display: block;
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+
         .barra-lista {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -979,6 +1058,9 @@
                     <span class="etiqueta-total">Saldo Total</span>
                     <span id="totalSaldo">0,00 &euro;</span>
                 </div>
+
+                <div class="saldos-cuentas" id="saldosInicio"></div>
+
                 <div class="menu-principal">
                     <button class="menu-btn" onclick="mostrarVista('registrar')">
                         <span class="menu-icono">&#10133;</span>
@@ -1060,6 +1142,8 @@
         <!-- ===== MOVIMIENTOS ===== -->
         <div class="vista" id="vista-movimientos">
             <div class="panel">
+                <div class="chips-cuentas" id="chipsCuentas"></div>
+
                 <div class="barra-lista">
                     <button class="btn-secondary" onclick="alternarFiltros()" id="btnFiltros">&#128269; Filtros</button>
                     <button class="btn-secondary" onclick="alternarOrden()" id="btnOrden">&#8645; Antiguos primero</button>
@@ -1213,7 +1297,7 @@
             aviso.style.display = (nombre === 'inicio' || nombre === 'copias') ? '' : 'none';
 
             if (nombre === 'registrar') actualizarFormulario();
-            if (nombre === 'movimientos') aplicarFiltros();
+            if (nombre === 'movimientos') { pintarChipsCuentas(); aplicarFiltros(); }
             if (nombre === 'informes') { if (!document.getElementById('infDesde').value) periodoRapido('mes'); else generarInforme(); }
             if (nombre === 'inicio') actualizarResumenInicio();
 
@@ -1228,6 +1312,58 @@
                 actualizarFormulario();
             }
             mostrarVista('inicio');
+        }
+
+        // Saldo de cada cuenta en la pantalla de inicio
+        function pintarSaldosInicio() {
+            const caja = document.getElementById('saldosInicio');
+            if (!caja) return;
+
+            if (cuentas.length === 0) {
+                caja.innerHTML = '';
+                return;
+            }
+
+            caja.innerHTML = cuentas.map(cuenta => {
+                const icono = cuenta.tipo === 'banco' ? '&#127974;' : cuenta.tipo === 'efectivo' ? '&#128181;' : '&#128179;';
+                const neg = cuenta.saldo < 0;
+                return '<button class="saldo-cuenta-fila' + (neg ? ' negativo' : '') + '" onclick="verCartillaCuenta(' + cuenta.id + ')">' +
+                    '<span class="saldo-cuenta-nombre">' + icono + ' ' + cuenta.nombre + '</span>' +
+                    '<span class="saldo-cuenta-valor' + (neg ? ' negativo' : '') + '">' + fmt(cuenta.saldo) + '</span>' +
+                    '</button>';
+            }).join('');
+        }
+
+        // Abre la cartilla de una cuenta concreta
+        function verCartillaCuenta(id) {
+            const sel = document.getElementById('filtroAccount');
+            if (sel) sel.value = id;
+            mostrarVista('movimientos');
+        }
+
+        // Botones rapidos para saltar entre cuentas dentro de la cartilla
+        function pintarChipsCuentas() {
+            const caja = document.getElementById('chipsCuentas');
+            if (!caja) return;
+
+            const actual = document.getElementById('filtroAccount').value;
+            const total = cuentas.reduce((a, c) => a + c.saldo, 0);
+
+            let html = '<button class="chip-cuenta' + (!actual ? ' activo' : '') + '" onclick="filtrarPorCuenta(\'\')">' +
+                'Todas<span class="chip-saldo">' + fmt(total) + '</span></button>';
+
+            cuentas.forEach(cuenta => {
+                html += '<button class="chip-cuenta' + (actual == cuenta.id ? ' activo' : '') + '" onclick="filtrarPorCuenta(\'' + cuenta.id + '\')">' +
+                    cuenta.nombre + '<span class="chip-saldo">' + fmt(cuenta.saldo) + '</span></button>';
+            });
+
+            caja.innerHTML = html;
+        }
+
+        function filtrarPorCuenta(id) {
+            document.getElementById('filtroAccount').value = id;
+            pintarChipsCuentas();
+            aplicarFiltros();
         }
 
         function actualizarResumenInicio() {
@@ -1251,6 +1387,7 @@
 
         function limpiarFiltros() {
             document.getElementById('filtroAccount').value = '';
+            pintarChipsCuentas();
             document.getElementById('busqueda').value = '';
             document.getElementById('filtroDesde').value = '';
             document.getElementById('filtroHasta').value = '';
@@ -1288,7 +1425,7 @@
             mostrarVista('inicio');
 
             // Event listeners para filtros
-            document.getElementById('filtroAccount').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroAccount').addEventListener('change', () => { pintarChipsCuentas(); aplicarFiltros(); });
             document.getElementById('busqueda').addEventListener('input', aplicarFiltros);
             document.getElementById('filtroDesde').addEventListener('change', aplicarFiltros);
             document.getElementById('filtroHasta').addEventListener('change', aplicarFiltros);
@@ -1394,6 +1531,8 @@
                     if (el) { el.textContent = fmt(0); el.style.color = ''; }
                 });
                 actualizarResumenInicio();
+                pintarSaldosInicio();
+                pintarChipsCuentas();
                 return;
             }
 
@@ -1429,6 +1568,8 @@
                 el.style.color = totalSaldo < 0 ? '#ef4444' : '';
             });
             actualizarResumenInicio();
+            pintarSaldosInicio();
+            pintarChipsCuentas();
         }
 
         let cuentaEditandoId = null;
