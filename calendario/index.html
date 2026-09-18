@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario de Citas Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --primary-dark: #1e40af;
+      --success: #16a34a;
+      --warning: #ea580c;
+      --danger: #dc2626;
+      --work: #3b82f6;
+      --personal: #8b5cf6;
+      --medical: #ec4899;
+      --other: #6b7280;
+      
+      --bg-light: #ffffff;
+      --bg-secondary: #f9fafb;
+      --border: #e5e7eb;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-light: #1f2937;
+        --bg-secondary: #111827;
+        --border: #374151;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .view-toggle button {
+      padding: 8px 16px;
+      border: none;
+      background: var(--bg-light);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .view-toggle button.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-light);
+      color: var(--text-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--bg-secondary);
+      border-color: var(--primary);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 2rem;
+    }
+
+    .calendar-section {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .calendar-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Vista Mes */
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--bg-light);
+      transition: all 0.2s;
+      position: relative;
+      min-height: 80px;
+      font-size: 12px;
+    }
+
+    .calendar-day:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .calendar-day.other-month {
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+    }
+
+    .calendar-day.today {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .calendar-day.today::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .day-number {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .day-indicator {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Vista Semana */
+    .week-view {
+      display: none;
+    }
+
+    .week-view.active {
+      display: block;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+    }
+
+    .week-day {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 200px;
+    }
+
+    .week-day.today {
+      border: 2px solid var(--primary);
+      background: var(--primary-light);
+    }
+
+    .week-day-header {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .week-day-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .week-cita {
+      background: var(--bg-light);
+      border-left: 3px solid var(--primary);
+      padding: 6px;
+      margin-bottom: 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .week-cita:hover {
+      opacity: 0.8;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .sidebar-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .sidebar-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: var(--bg-light);
+      color: var(--text-primary);
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    textarea {
+      min-height: 60px;
+      font-size: 13px;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .type-option {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-light);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .type-option.active {
+      color: white;
+      border-color: currentColor;
+    }
+
+    .type-option[data-type="work"].active {
+      background: var(--work);
+      border-color: var(--work);
+    }
+
+    .type-option[data-type="personal"].active {
+      background: var(--personal);
+      border-color: var(--personal);
+    }
+
+    .type-option[data-type="medical"].active {
+      background: var(--medical);
+      border-color: var(--medical);
+    }
+
+    .type-option[data-type="other"].active {
+      background: var(--other);
+      border-color: var(--other);
+    }
+
+    .tags-input {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      background: var(--primary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tag-input-wrapper {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tag-input-wrapper input {
+      flex: 1;
+    }
+
+    .tag-input-wrapper button {
+      padding: 8px 12px;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .success {
+      color: var(--success);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .filters-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      margin-bottom: 12px;
+    }
+
+    .filter-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .filter-options {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .citas-list {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .cita-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cita-item:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .cita-content {
+      flex: 1;
+    }
+
+    .cita-description {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .cita-time {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .cita-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .cita-tag {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-light);
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .reminder-badge {
+      background: var(--warning);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .type-selector {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .calendar-section {
+        padding: 1rem;
+      }
+
+      .sidebar-card {
+        padding: 1rem;
+      }
+
+      .calendar-day {
+        min-height: 60px;
+        font-size: 11px;
+      }
+
+      .week-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📅 Mis Citas</h1>
+      <div class="header-actions">
+        <div class="view-toggle">
+          <button class="active" onclick="app.setView('month')">📅 Mes</button>
+          <button onclick="app.setView('week')">📆 Semana</button>
+        </div>
+        <button onclick="app.exportPDF()">📄 PDF</button>
+        <button onclick="app.exportCitas()">💾 JSON</button>
+        <button onclick="document.getElementById('importFile').click()">📂 Cargar</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importCitas(event)">
+        <button onclick="app.verBackups()">🔄 Backups</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <div>
+        <!-- Vista Mes -->
+        <div class="calendar-section" id="monthView">
+          <div class="calendar-header">
+            <h2 id="monthYear"></h2>
+            <div class="calendar-nav">
+              <button onclick="app.prevMonth()">← Anterior</button>
+              <button onclick="app.today()">Hoy</button>
+              <button onclick="app.nextMonth()">Siguiente →</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays">
+            <div class="weekday">Dom</div>
+            <div class="weekday">Lun</div>
+            <div class="weekday">Mar</div>
+            <div class="weekday">Mié</div>
+            <div class="weekday">Jue</div>
+            <div class="weekday">Vie</div>
+            <div class="weekday">Sáb</div>
+          </div>
+          <div class="calendar-grid" id="calendar"></div>
+        </div>
+
+        <!-- Vista Semana -->
+        <div class="calendar-section week-view" id="weekView">
+          <div class="calendar-header">
+            <h2 id="weekTitle"></h2>
+            <div class="calendar-nav">
+              <button onclick="app.prevWeek()">← Anterior</button>
+              <button onclick="app.today()">Hoy</button>
+              <button onclick="app.nextWeek()">Siguiente →</button>
+            </div>
+          </div>
+          <div class="week-grid" id="weekGrid"></div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <!-- Filtros -->
+        <div class="sidebar-card">
+          <h3>🔍 Filtros</h3>
+          <div class="filters-panel" id="filtersPanel">
+            <div class="filter-group">
+              <label>Tipo</label>
+              <div class="filter-options">
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-work"> 💼 Trabajo</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-personal"> 🏠 Personal</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-medical"> 🏥 Médica</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-other"> 📌 Otra</label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Fecha</label>
+              <div class="filter-options">
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-today"> Hoy</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-week"> Esta semana</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-month"> Este mes</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-future"> Próximas</label>
+              </div>
+            </div>
+          </div>
+          <button onclick="app.limpiarFiltros()" style="width: 100%; font-size: 12px;">Limpiar filtros</button>
+        </div>
+
+        <!-- Agregar cita -->
+        <div class="sidebar-card">
+          <h3>➕ Nueva cita</h3>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="citaFecha">
+          </div>
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="citaHora">
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <input type="text" id="citaDescripcion" placeholder="¿Qué es la cita?">
+          </div>
+          <div class="form-group">
+            <label>Notas (opcional)</label>
+            <textarea id="citaNotas" placeholder="Detalles adicionales..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <div class="type-selector">
+              <div class="type-option active" data-type="work" onclick="app.selectType('work', this)">💼 Trabajo</div>
+              <div class="type-option" data-type="personal" onclick="app.selectType('personal', this)">🏠 Personal</div>
+              <div class="type-option" data-type="medical" onclick="app.selectType('medical', this)">🏥 Médica</div>
+              <div class="type-option" data-type="other" onclick="app.selectType('other', this)">📌 Otra</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Etiquetas</label>
+            <div class="tag-input-wrapper">
+              <input type="text" id="tagInput" placeholder="Nueva etiqueta..." onkeypress="if(event.key==='Enter') app.agregarTag(); return false;">
+              <button onclick="app.agregarTag()" style="padding: 8px 12px;">Añadir</button>
+            </div>
+            <div class="tags-input" id="tagsContainer"></div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="citaReminder" onchange="app.toggleReminderOptions()"> Recordatorio
+            </label>
+            <div id="reminderOptions" style="display: none; margin-top: 8px;">
+              <select id="reminderTime" style="margin-bottom: 8px;">
+                <option value="15">15 minutos antes</option>
+                <option value="30">30 minutos antes</option>
+                <option value="60">1 hora antes</option>
+                <option value="1440">1 día antes</option>
+              </select>
+            </div>
+          </div>
+          <button class="primary" onclick="app.agregarCita()" style="width: 100%;">Guardar cita</button>
+          <div class="error" id="error"></div>
+          <div class="success" id="success"></div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="sidebar-card">
+          <h3>📊 Resumen</h3>
+          <div class="stats">
+            <div class="stat-card">
+              <div class="stat-number" id="statTotal">0</div>
+              <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="statPending">0</div>
+              <div class="stat-label">Próximas</div>
+            </div>
+          </div>
+          <div id="typeStats"></div>
+        </div>
+
+        <!-- Próximas citas -->
+        <div class="sidebar-card">
+          <h3>⏰ Próximas</h3>
+          <div class="citas-list" id="citasList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de detalles -->
+  <div class="modal" id="detailModal" onclick="if(event.target.id==='detailModal') app.closeDetailModal()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="detailTitle"></h2>
+        <button class="modal-close" onclick="app.closeDetailModal()">×</button>
+      </div>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal de edición -->
+  <div class="modal" id="editModal" onclick="if(event.target.id==='editModal') app.closeEditModal()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar cita</h2>
+        <button class="modal-close" onclick="app.closeEditModal()">×</button>
+      </div>
+      <div style="display: grid; gap: 16px;">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="editFecha">
+        </div>
+        <div class="form-group">
+          <label>Hora</label>
+          <input type="time" id="editHora">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <input type="text" id="editDescripcion">
+        </div>
+        <div class="form-group">
+          <label>Notas (opcional)</label>
+          <textarea id="editNotas"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <div class="type-selector">
+            <div class="type-option" data-type="work" onclick="app.selectTypeEdit('work', this)">💼 Trabajo</div>
+            <div class="type-option" data-type="personal" onclick="app.selectTypeEdit('personal', this)">🏠 Personal</div>
+            <div class="type-option" data-type="medical" onclick="app.selectTypeEdit('medical', this)">🏥 Médica</div>
+            <div class="type-option" data-type="other" onclick="app.selectTypeEdit('other', this)">📌 Otra</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Etiquetas</label>
+          <div class="tag-input-wrapper">
+            <input type="text" id="editTagInput" placeholder="Nueva etiqueta..." onkeypress="if(event.key==='Enter') app.agregarTagEdit(); return false;">
+            <button onclick="app.agregarTagEdit()" style="padding: 8px 12px;">Añadir</button>
+          </div>
+          <div class="tags-input" id="editTagsContainer"></div>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="editReminder" onchange="app.toggleReminderEditOptions()"> Recordatorio
+          </label>
+          <div id="editReminderOptions" style="display: none; margin-top: 8px;">
+            <select id="editReminderTime">
+              <option value="15">15 minutos antes</option>
+              <option value="30">30 minutos antes</option>
+              <option value="60">1 hora antes</option>
+              <option value="1440">1 día antes</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="primary" onclick="app.guardarEdicion()" style="flex: 1;">Guardar cambios</button>
+          <button onclick="app.closeEditModal()" style="flex: 1;">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de backups -->
+  <div class="modal" id="backupModal" onclick="if(event.target.id==='backupModal') this.classList.remove('active')">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Copias de seguridad</h2>
+        <button class="modal-close" onclick="document.getElementById('backupModal').classList.remove('active')">×</button>
+      </div>
+      <div id="backupsList"></div>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:1rem; line-height:1.5;">
+        📌 Se guardan automáticamente. Las 10 últimas copias están disponibles.
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    const app = {
+      citas: [],
+      citasFiltradas: [],
+      currentDate: new Date(),
+      currentWeekStart: null,
+      selectedType: 'work',
+      currentTags: [],
+      viewMode: 'month',
+      editingCitaIndex: null,
+      editingTags: [],
+      activeFilters: {
+        types: new Set(['work', 'personal', 'medical', 'other']),
+        dates: new Set(['today', 'week', 'month', 'future'])
+      },
+
+      init() {
+        this.cargarCitas();
+        this.setHoyEnInputs();
+        this.renderizar();
+        this.inicializarRecordatorios();
+      },
+
+      cargarCitas() {
+        const guardadas = localStorage.getItem('misCitas');
+        this.citas = guardadas ? JSON.parse(guardadas) : [];
+        this.citasFiltradas = [...this.citas];
+      },
+
+      guardarCitas() {
+        localStorage.setItem('misCitas', JSON.stringify(this.citas));
+        this.crearBackup();
+      },
+
+      crearBackup() {
+        const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+        const ahora = new Date();
+        
+        backups.unshift({
+          timestamp: ahora.toISOString(),
+          fecha: ahora.toLocaleDateString('es-ES', { 
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          }),
+          datos: JSON.parse(JSON.stringify(this.citas))
+        });
+
+        if (backups.length > 10) backups.pop();
+        localStorage.setItem('backups', JSON.stringify(backups));
+      },
+
+      renderizar() {
+        if (this.viewMode === 'month') {
+          this.renderCalendar();
+        } else {
+          this.renderWeek();
+        }
+        this.renderCitas();
+        this.actualizarEstadisticas();
+      },
+
+      setView(mode) {
+        this.viewMode = mode;
+        document.getElementById('monthView').style.display = mode === 'month' ? 'block' : 'none';
+        document.getElementById('weekView').classList.toggle('active', mode === 'week');
+        document.querySelectorAll('.view-toggle button').forEach((btn, i) => {
+          btn.classList.toggle('active', (i === 0 && mode === 'month') || (i === 1 && mode === 'week'));
+        });
+        this.renderizar();
+      },
+
+      renderCalendar() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        document.getElementById('monthYear').textContent = 
+          new Date(year, month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+        const calendar = document.getElementById('calendar');
+        calendar.innerHTML = '';
+
+        const today = new Date();
+        const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+
+        for (let i = 0; i < startingDayOfWeek; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'calendar-day other-month';
+          calendar.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const dayElement = document.createElement('div');
+          dayElement.className = 'calendar-day';
+          
+          if (isCurrentMonth && day === today.getDate()) {
+            dayElement.classList.add('today');
+          }
+
+          const citasDelDia = this.citasFiltradas.filter(c => c.fecha === dateStr);
+          const typeColors = { work: '--work', personal: '--personal', medical: '--medical', other: '--other' };
+
+          let html = `<div class="day-number">${day}</div>`;
+          if (citasDelDia.length > 0) {
+            html += '<div class="day-indicator">';
+            citasDelDia.forEach(c => {
+              const colorVar = typeColors[c.tipo] || '--other';
+              html += `<div class="dot" style="background: var(${colorVar});"></div>`;
+            });
+            html += '</div>';
+          }
+          dayElement.innerHTML = html;
+          dayElement.onclick = () => this.selectDay(dateStr);
+          calendar.appendChild(dayElement);
+        }
+      },
+
+      renderWeek() {
+        const today = new Date();
+        if (!this.currentWeekStart) {
+          const first = today.getDate() - today.getDay();
+          this.currentWeekStart = new Date(today.setDate(first));
+        }
+
+        const weekEnd = new Date(this.currentWeekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        document.getElementById('weekTitle').textContent = 
+          `${this.currentWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
+
+        const weekGrid = document.getElementById('weekGrid');
+        weekGrid.innerHTML = '';
+
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(this.currentWeekStart);
+          day.setDate(day.getDate() + i);
+          const dateStr = day.toISOString().split('T')[0];
+          const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+          const weekDay = document.createElement('div');
+          weekDay.className = `week-day ${isToday ? 'today' : ''}`;
+          
+          const dayName = day.toLocaleDateString('es-ES', { weekday: 'short' });
+          const dayNum = day.getDate();
+          const citasDelDia = this.citasFiltradas.filter(c => c.fecha === dateStr).sort((a, b) => a.hora.localeCompare(b.hora));
+
+          let html = `<div class="week-day-header">${dayName}</div>`;
+          html += `<div class="week-day-date">${dayNum}</div>`;
+          
+          citasDelDia.forEach((cita, idx) => {
+            const typeEmoji = { work: '💼', personal: '🏠', medical: '🏥', other: '📌' }[cita.tipo];
+            html += `<div class="week-cita" style="border-left-color: var(--${cita.tipo})" onclick="app.mostrarDetalle(${this.citas.indexOf(cita)})">${typeEmoji} ${cita.hora} ${this.escapeHtml(cita.descripcion)}</div>`;
+          });
+
+          weekDay.innerHTML = html;
+          weekGrid.appendChild(weekDay);
+        }
+      },
+
+      renderCitas() {
+        const lista = document.getElementById('citasList');
+        lista.innerHTML = '';
+
+        const hoy = new Date().toISOString().split('T')[0];
+        const citasOrdenadas = [...this.citasFiltradas]
+          .sort((a, b) => new Date(a.fecha + ' ' + a.hora) - new Date(b.fecha + ' ' + b.hora))
+          .slice(0, 15);
+
+        if (citasOrdenadas.length === 0) {
+          lista.innerHTML = '<div class="empty-state">No hay citas</div>';
+          return;
+        }
+
+        citasOrdenadas.forEach((cita, idx) => {
+          const fecha = new Date(cita.fecha);
+          const es = fecha.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' });
+          const esPasada = cita.fecha < hoy;
+          const typeEmoji = { work: '💼', personal: '🏠', medical: '🏥', other: '📌' }[cita.tipo];
+          const citaIndex = this.citas.indexOf(cita);
+
+          const div = document.createElement('div');
+          div.className = 'cita-item';
+          div.onclick = () => this.mostrarDetalle(citaIndex);
+          
+          let html = `
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="font-size: 16px;">${typeEmoji}</span>
+              <div class="cita-content" style="flex: 1;">
+                <div class="cita-description">${this.escapeHtml(cita.descripcion)}</div>
+                <div class="cita-time">${es} • ${cita.hora}</div>
+                ${cita.recordatorio ? `<div class="reminder-badge">🔔 ${this.formatReminder(cita.recordatorio)}</div>` : ''}
+                ${cita.tags && cita.tags.length > 0 ? `<div class="cita-tags">${cita.tags.map(t => `<span class="cita-tag">${this.escapeHtml(t)}</span>`).join('')}</div>` : ''}
+              </div>
+              <button class="cita-delete" onclick="event.stopPropagation(); app.eliminarCita(${citaIndex})">×</button>
+            </div>
+          `;
+          
+          div.innerHTML = html;
+          lista.appendChild(div);
+        });
+      },
+
+      mostrarDetalle(index) {
+        const cita = this.citas[index];
+        const modal = document.getElementById('detailModal');
+        const fecha = new Date(cita.fecha);
+        const fechaLarga = fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        const typeEmoji = { work: '💼', personal: '🏠', medical: '🏥', other: '📌' }[cita.tipo];
+
+        document.getElementById('detailTitle').textContent = cita.descripcion;
+        
+        let html = `
+          <div style="display: grid; gap: 16px;">
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">TIPO</div>
+              <div style="font-size: 16px;">${typeEmoji} ${this.capitalize(cita.tipo)}</div>
+            </div>
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">FECHA Y HORA</div>
+              <div style="font-size: 15px; font-weight: 600;">${fechaLarga} • ${cita.hora}</div>
+            </div>
+            ${cita.notas ? `
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">NOTAS</div>
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; font-size: 13px; line-height: 1.5;">${this.escapeHtml(cita.notas)}</div>
+            </div>
+            ` : ''}
+            ${cita.tags && cita.tags.length > 0 ? `
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">ETIQUETAS</div>
+              <div class="cita-tags">${cita.tags.map(t => `<span class="cita-tag">${this.escapeHtml(t)}</span>`).join('')}</div>
+            </div>
+            ` : ''}
+            ${cita.recordatorio ? `
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">RECORDATORIO</div>
+              <div style="background: var(--warning); color: white; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">🔔 ${this.formatReminder(cita.recordatorio)}</div>
+            </div>
+            ` : ''}
+            <div style="display: flex; gap: 8px;">
+              <button class="primary" onclick="app.editarCita(${index})" style="flex: 1;">✏️ Editar</button>
+              <button onclick="if(confirm('¿Eliminar esta cita?')) { app.eliminarCita(${index}); app.closeDetailModal(); }" style="flex: 1; border-color: var(--danger); color: var(--danger);">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('detailContent').innerHTML = html;
+        modal.classList.add('active');
+      },
+
+      closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+      },
+
+      agregarCita() {
+        const fecha = document.getElementById('citaFecha').value;
+        const hora = document.getElementById('citaHora').value;
+        const descripcion = document.getElementById('citaDescripcion').value;
+        const notas = document.getElementById('citaNotas').value;
+        const error = document.getElementById('error');
+        const success = document.getElementById('success');
+
+        error.style.display = 'none';
+        success.style.display = 'none';
+
+        if (!fecha || !hora || !descripcion.trim()) {
+          error.textContent = 'Completa fecha, hora y descripción';
+          error.style.display = 'block';
+          return;
+        }
+
+        this.citas.push({
+          fecha,
+          hora,
+          descripcion: descripcion.trim(),
+          notas: notas.trim(),
+          tipo: this.selectedType,
+          tags: [...this.currentTags],
+          recordatorio: document.getElementById('citaReminder').checked ? parseInt(document.getElementById('reminderTime').value) : null
+        });
+
+        this.guardarCitas();
+        document.getElementById('citaFecha').value = '';
+        document.getElementById('citaHora').value = '';
+        document.getElementById('citaDescripcion').value = '';
+        document.getElementById('citaNotas').value = '';
+        document.getElementById('citaReminder').checked = false;
+        document.getElementById('reminderOptions').style.display = 'none';
+        this.currentTags = [];
+        document.getElementById('tagsContainer').innerHTML = '';
+
+        success.textContent = '✓ Cita guardada correctamente';
+        success.style.display = 'block';
+
+        setTimeout(() => {
+          this.aplicarFiltros();
+          this.renderizar();
+        }, 500);
+      },
+
+      agregarTag() {
+        const input = document.getElementById('tagInput');
+        const tag = input.value.trim();
+
+        if (!tag) return;
+        if (this.currentTags.includes(tag)) {
+          alert('Esta etiqueta ya está añadida');
+          return;
+        }
+
+        this.currentTags.push(tag);
+        this.renderTags();
+        input.value = '';
+      },
+
+      eliminarTag(tag) {
+        this.currentTags = this.currentTags.filter(t => t !== tag);
+        this.renderTags();
+      },
+
+      renderTags() {
+        const container = document.getElementById('tagsContainer');
+        container.innerHTML = this.currentTags.map(tag => 
+          `<div class="tag">${this.escapeHtml(tag)}<button onclick="app.eliminarTag('${tag}')">×</button></div>`
+        ).join('');
+      },
+
+      eliminarCita(index) {
+        if (confirm('¿Eliminar esta cita?')) {
+          this.citas.splice(index, 1);
+          this.guardarCitas();
+          this.aplicarFiltros();
+          this.renderizar();
+        }
+      },
+
+      selectType(tipo, element) {
+        this.selectedType = tipo;
+        document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+        element.classList.add('active');
+      },
+
+      toggleReminderOptions() {
+        const isChecked = document.getElementById('citaReminder').checked;
+        document.getElementById('reminderOptions').style.display = isChecked ? 'block' : 'none';
+      },
+
+      formatReminder(minutes) {
+        if (minutes < 60) return `${minutes} minutos antes`;
+        if (minutes === 60) return '1 hora antes';
+        if (minutes === 1440) return '1 día antes';
+        return minutes + ' minutos antes';
+      },
+
+      selectDay(dateStr) {
+        document.getElementById('citaFecha').value = dateStr;
+        document.getElementById('citaHora').focus();
+      },
+
+      prevMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+        this.renderCalendar();
+      },
+
+      nextMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.renderCalendar();
+      },
+
+      prevWeek() {
+        this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+        this.renderWeek();
+      },
+
+      nextWeek() {
+        this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+        this.renderWeek();
+      },
+
+      today() {
+        this.currentDate = new Date();
+        this.currentWeekStart = null;
+        this.setHoyEnInputs();
+        this.renderizar();
+      },
+
+      setHoyEnInputs() {
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('citaFecha').value = hoy;
+      },
+
+      aplicarFiltros() {
+        this.activeFilters.types.clear();
+        this.activeFilters.dates.clear();
+
+        document.querySelectorAll('[data-filter^="type-"]').forEach(checkbox => {
+          if (checkbox.checked) {
+            this.activeFilters.types.add(checkbox.dataset.filter.split('-')[1]);
+          }
+        });
+
+        document.querySelectorAll('[data-filter^="date-"]').forEach(checkbox => {
+          if (checkbox.checked) {
+            this.activeFilters.dates.add(checkbox.dataset.filter.split('-')[1]);
+          }
+        });
+
+        this.citasFiltradas = this.citas.filter(cita => {
+          const citaFecha = new Date(cita.fecha);
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+
+          const estaEnTipo = this.activeFilters.types.has(cita.tipo);
+          
+          let estaEnFecha = false;
+          if (this.activeFilters.dates.has('today') && cita.fecha === hoy.toISOString().split('T')[0]) estaEnFecha = true;
+          
+          const startWeek = new Date(hoy);
+          startWeek.setDate(hoy.getDate() - hoy.getDay());
+          const endWeek = new Date(startWeek);
+          endWeek.setDate(endWeek.getDate() + 6);
+          if (this.activeFilters.dates.has('week') && citaFecha >= startWeek && citaFecha <= endWeek) estaEnFecha = true;
+
+          const startMonth = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+          const endMonth = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+          if (this.activeFilters.dates.has('month') && citaFecha >= startMonth && citaFecha <= endMonth) estaEnFecha = true;
+
+          if (this.activeFilters.dates.has('future') && citaFecha > hoy) estaEnFecha = true;
+
+          return estaEnTipo && estaEnFecha;
+        });
+
+        this.renderizar();
+      },
+
+      limpiarFiltros() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+        this.aplicarFiltros();
+      },
+
+      actualizarEstadisticas() {
+        const hoy = new Date().toISOString().split('T')[0];
+        const proximasCitas = this.citas.filter(c => c.fecha >= hoy).length;
+
+        document.getElementById('statTotal').textContent = this.citas.length;
+        document.getElementById('statPending').textContent = proximasCitas;
+
+        const typeStats = {};
+        this.citas.forEach(c => {
+          typeStats[c.tipo] = (typeStats[c.tipo] || 0) + 1;
+        });
+
+        const typeEmoji = { work: '💼', personal: '🏠', medical: '🏥', other: '📌' };
+        let html = '';
+        Object.entries(typeStats).forEach(([type, count]) => {
+          html += `<div class="stat-card"><div class="stat-number">${count}</div><div class="stat-label">${typeEmoji[type]} ${this.capitalize(type)}</div></div>`;
+        });
+
+        document.getElementById('typeStats').innerHTML = html;
+      },
+
+      exportPDF() {
+        const hoy = new Date();
+        const fechaDoc = hoy.toLocaleDateString('es-ES', { 
+          day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        const citasOrdenadas = [...this.citas]
+          .sort((a, b) => new Date(a.fecha + ' ' + a.hora) - new Date(b.fecha + ' ' + b.hora));
+
+        const typeEmojis = {
+          work: '💼',
+          personal: '🏠',
+          medical: '🏥',
+          other: '📌'
+        };
+
+        const typeNames = {
+          work: 'Trabajo',
+          personal: 'Personal',
+          medical: 'Médica',
+          other: 'Otra'
+        };
+
+        let html = `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px;">
+            <h1 style="text-align: center; color: #2563eb; margin-bottom: 10px;">📅 Mis Citas</h1>
+            <p style="text-align: center; color: #6b7280; font-size: 12px; margin-bottom: 30px;">
+              Generado el ${fechaDoc} • Total: ${citasOrdenadas.length} citas
+            </p>
+            
+            ${citasOrdenadas.length === 0 ? 
+              '<p style="text-align: center; color: #9ca3af;">No hay citas para mostrar</p>' :
+              citasOrdenadas.map((cita, i) => {
+                const fecha = new Date(cita.fecha);
+                const fechaFormato = fecha.toLocaleDateString('es-ES', { 
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+                const emoji = typeEmojis[cita.tipo] || '📌';
+                const type = typeNames[cita.tipo] || 'Otra';
+
+                return `
+                  <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; margin-bottom: 12px; page-break-inside: avoid;">
+                    <div style="display: flex; align-items: start; gap: 12px;">
+                      <div style="font-size: 24px; flex-shrink: 0;">${emoji}</div>
+                      <div style="flex: 1;">
+                        <h3 style="margin: 0 0 4px 0; font-size: 16px; color: #1f2937;">
+                          ${this.escapeHtml(cita.descripcion)}
+                        </h3>
+                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                          <strong>${fechaFormato}</strong> • ${cita.hora}
+                        </p>
+                        ${cita.notas ? `<p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; font-style: italic;">${this.escapeHtml(cita.notas)}</p>` : ''}
+                        <div>
+                          <span style="display: inline-block; background: #e5e7eb; color: #1f2937; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">
+                            ${type}
+                          </span>
+                          ${cita.tags && cita.tags.length > 0 ? cita.tags.map(t => 
+                            `<span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; margin-left: 4px;">
+                              ${this.escapeHtml(t)}
+                            </span>`
+                          ).join('') : ''}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')
+            }
+
+            <hr style="margin-top: 40px; border: none; border-top: 1px solid #e5e7eb;">
+            <p style="text-align: center; font-size: 11px; color: #9ca3af; margin-top: 20px;">
+              Calendario de citas • Generado automáticamente
+            </p>
+          </div>
+        `;
+
+        const elemento = document.createElement('div');
+        elemento.innerHTML = html;
+
+        const opt = {
+          margin: 10,
+          filename: `citas-${hoy.toISOString().split('T')[0]}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+
+        html2pdf().set(opt).from(elemento).save();
+      },
+
+      exportCitas() {
+        const json = JSON.stringify(this.citas, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `citas-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+
+      importCitas(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importadas = JSON.parse(e.target.result);
+            if (Array.isArray(importadas)) {
+              this.citas = importadas;
+              this.guardarCitas();
+              this.aplicarFiltros();
+              this.renderizar();
+              alert('Citas importadas correctamente');
+            }
+          } catch {
+            alert('Error al importar el archivo');
+          }
+        };
+        reader.readAsText(file);
+        document.getElementById('importFile').value = '';
+      },
+
+      verBackups() {
+        const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+        const lista = document.getElementById('backupsList');
+        lista.innerHTML = '';
+
+        if (backups.length === 0) {
+          lista.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay copias de seguridad</p>';
+          document.getElementById('backupModal').classList.add('active');
+          return;
+        }
+
+        backups.forEach((backup, index) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+          div.innerHTML = `
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">${backup.fecha}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">${backup.datos.length} citas</div>
+            </div>
+            <button onclick="app.restaurarBackup(${index})" style="padding: 6px 12px; font-size: 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Restaurar</button>
+          `;
+          lista.appendChild(div);
+        });
+
+        document.getElementById('backupModal').classList.add('active');
+      },
+
+      restaurarBackup(index) {
+        if (confirm('¿Restaurar esta copia? Se reemplazarán todas tus citas actuales.')) {
+          const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+          this.citas = JSON.parse(JSON.stringify(backups[index].datos));
+          this.guardarCitas();
+          this.aplicarFiltros();
+          this.renderizar();
+          document.getElementById('backupModal').classList.remove('active');
+          alert('Citas restauradas correctamente');
+        }
+      },
+
+      inicializarRecordatorios() {
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+
+        setInterval(() => this.verificarRecordatorios(), 60000);
+      },
+
+      verificarRecordatorios() {
+        const ahora = new Date();
+        this.citas.forEach(cita => {
+          if (!cita.recordatorio) return;
+
+          const [citaH, citaM] = cita.hora.split(':').map(Number);
+          const citaDate = new Date(cita.fecha);
+          citaDate.setHours(citaH, citaM, 0);
+          
+          const tiempoHasta = (citaDate - ahora) / 60000;
+
+          if (tiempoHasta > 0 && tiempoHasta <= cita.recordatorio && tiempoHasta > cita.recordatorio - 1) {
+            if (Notification.permission === 'granted') {
+              new Notification('Recordatorio de cita', {
+                body: `${cita.descripcion} en ${cita.hora}`,
+                icon: '📅'
+              });
+            }
+          }
+        });
+      },
+
+      escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      },
+
+      capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+      },
+
+      editarCita(index) {
+        this.editingCitaIndex = index;
+        const cita = this.citas[index];
+
+        // Llenar campos con datos actuales
+        document.getElementById('editFecha').value = cita.fecha;
+        document.getElementById('editHora').value = cita.hora;
+        document.getElementById('editDescripcion').value = cita.descripcion;
+        document.getElementById('editNotas').value = cita.notas || '';
+
+        // Seleccionar tipo
+        document.querySelectorAll('#editModal .type-option').forEach(opt => opt.classList.remove('active'));
+        document.querySelector(`#editModal [data-type="${cita.tipo}"]`).classList.add('active');
+
+        // Etiquetas
+        this.editingTags = [...(cita.tags || [])];
+        this.renderTagsEdit();
+
+        // Recordatorio
+        document.getElementById('editReminder').checked = !!cita.recordatorio;
+        if (cita.recordatorio) {
+          document.getElementById('editReminderTime').value = cita.recordatorio;
+          document.getElementById('editReminderOptions').style.display = 'block';
+        } else {
+          document.getElementById('editReminderOptions').style.display = 'none';
+        }
+
+        document.getElementById('editTagInput').value = '';
+        document.getElementById('editModal').classList.add('active');
+        this.closeDetailModal();
+      },
+
+      closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+        this.editingCitaIndex = null;
+        this.editingTags = [];
+      },
+
+      selectTypeEdit(tipo, element) {
+        document.querySelectorAll('#editModal .type-option').forEach(opt => opt.classList.remove('active'));
+        element.classList.add('active');
+      },
+
+      agregarTagEdit() {
+        const input = document.getElementById('editTagInput');
+        const tag = input.value.trim();
+
+        if (!tag) return;
+        if (this.editingTags.includes(tag)) {
+          alert('Esta etiqueta ya está añadida');
+          return;
+        }
+
+        this.editingTags.push(tag);
+        this.renderTagsEdit();
+        input.value = '';
+      },
+
+      eliminarTagEdit(tag) {
+        this.editingTags = this.editingTags.filter(t => t !== tag);
+        this.renderTagsEdit();
+      },
+
+      renderTagsEdit() {
+        const container = document.getElementById('editTagsContainer');
+        container.innerHTML = this.editingTags.map(tag => 
+          `<div class="tag">${this.escapeHtml(tag)}<button onclick="app.eliminarTagEdit('${tag}')">×</button></div>`
+        ).join('');
+      },
+
+      toggleReminderEditOptions() {
+        const isChecked = document.getElementById('editReminder').checked;
+        document.getElementById('editReminderOptions').style.display = isChecked ? 'block' : 'none';
+      },
+
+      guardarEdicion() {
+        const fecha = document.getElementById('editFecha').value;
+        const hora = document.getElementById('editHora').value;
+        const descripcion = document.getElementById('editDescripcion').value;
+        const notas = document.getElementById('editNotas').value;
+        const tipo = document.querySelector('#editModal .type-option.active').dataset.type;
+        const hasReminder = document.getElementById('editReminder').checked;
+        const reminderTime = hasReminder ? parseInt(document.getElementById('editReminderTime').value) : null;
+
+        if (!fecha || !hora || !descripcion.trim()) {
+          alert('Completa fecha, hora y descripción');
+          return;
+        }
+
+        // Actualizar cita
+        this.citas[this.editingCitaIndex] = {
+          fecha,
+          hora,
+          descripcion: descripcion.trim(),
+          notas: notas.trim(),
+          tipo,
+          tags: [...this.editingTags],
+          recordatorio: reminderTime
+        };
+
+        this.guardarCitas();
+        this.aplicarFiltros();
+        this.renderizar();
+        this.closeEditModal();
+        alert('Cita actualizada correctamente');
+      }
+    };
+
+    app.init();
+  </script>
+</body>
+</html>
