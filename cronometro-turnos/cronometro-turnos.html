@@ -210,6 +210,7 @@
         function checkActivation() {
             const code = document.getElementById('activationCode').value;
             if (code === ACTIVATION_CODE) {
+                localStorage.setItem('cronometro-activado', 'true');
                 document.getElementById('activationModal').classList.add('hidden');
                 document.getElementById('activationCode').value = '';
             } else {
@@ -221,6 +222,15 @@
                 }, 3000);
             }
         }
+
+        // Verificar activación al cargar
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('cronometro-activado') === 'true') {
+                document.getElementById('activationModal').classList.add('hidden');
+            } else {
+                document.getElementById('activationModal').classList.remove('hidden');
+            }
+        });
 
         function addPlayer() {
             const inp = document.getElementById('playerInput');
