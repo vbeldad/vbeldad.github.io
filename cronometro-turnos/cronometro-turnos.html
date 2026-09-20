@@ -183,7 +183,7 @@
     </div>
 
     <!-- MODAL DE ACTIVACIÓN -->
-    <div id="activationModal" class="activation-modal">
+    <div id="activationModal" class="activation-modal hidden">
         <div class="activation-content">
             <h2>🔐 Activación</h2>
             <p>Ingresa el código de activación para acceder</p>
@@ -224,13 +224,19 @@
         }
 
         // Verificar activación al cargar
-        window.addEventListener('load', function() {
-            if (localStorage.getItem('cronometro-activado') === 'true') {
-                document.getElementById('activationModal').classList.add('hidden');
-            } else {
+        function initActivation() {
+            if (localStorage.getItem('cronometro-activado') !== 'true') {
                 document.getElementById('activationModal').classList.remove('hidden');
+                document.getElementById('activationCode').focus();
             }
-        });
+        }
+
+        // Ejecutar al cargar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initActivation);
+        } else {
+            initActivation();
+        }
 
         function addPlayer() {
             const inp = document.getElementById('playerInput');
