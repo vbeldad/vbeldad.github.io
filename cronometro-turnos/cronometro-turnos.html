@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronómetro de Turnos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { margin-bottom: 20px; font-size: 28px; }
+        .section { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .section h2 { font-size: 16px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        input { flex: 1; min-width: 120px; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; border-radius: 4px; font-size: 14px; }
+        input:focus { outline: none; border-color: #3b82f6; }
+        button { padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        button:hover { background: #2563eb; }
+        button.secondary { background: #64748b; }
+        button.secondary:hover { background: #475569; }
+        button.success { background: #10b981; }
+        button.success:hover { background: #059669; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        .quick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .quick-btns button { padding: 6px 12px; font-size: 12px; }
+        .players-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+        .player-item { background: #0f172a; padding: 10px; border-radius: 4px; text-align: center; }
+        .player-item button { width: 100%; margin-top: 6px; padding: 4px; font-size: 11px; }
+        .hidden { display: none !important; }
+        .game-display { text-align: center; margin: 30px 0; }
+        .game-number { font-size: 14px; color: #94a3b8; margin-bottom: 10px; }
+        .player-turn { font-size: 18px; color: #94a3b8; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .timer { font-size: 100px; font-weight: bold; color: #3b82f6; font-variant-numeric: tabular-nums; line-height: 1; margin: 20px 0; }
+        .timer.warning { color: #f59e0b; }
+        .timer.danger { color: #ef4444; }
+        .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+        .controls button { padding: 12px 24px; font-size: 16px; min-width: 140px; }
+        .scoreboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .score-card { background: #0f172a; padding: 20px; border-radius: 8px; border: 2px solid #334155; text-align: center; }
+        .score-card.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .score-card.winner { border-color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+        .score-name { font-size: 13px; color: #94a3b8; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .score-value { font-size: 48px; font-weight: bold; color: #3b82f6; margin-bottom: 8px; }
+        .score-card.winner .score-value { color: #fbbf24; font-size: 56px; }
+        .score-label { font-size: 13px; color: #64748b; margin-bottom: 15px; font-weight: 600; }
+        .score-input { display: flex; gap: 8px; }
+        .score-input input { flex: 1; padding: 10px 12px; background: #1e293b; border: 2px solid #3b82f6; color: #e2e8f0; border-radius: 6px; font-size: 16px; font-weight: 600; text-align: center; }
+        .score-input input::placeholder { color: #64748b; }
+        .score-input input:focus { outline: none; border-color: #10b981; background: #0f172a; }
+        .score-input button { flex: 0 0 80px; background: #10b981; font-size: 16px; font-weight: 700; padding: 10px; }
+        .score-input button:hover { background: #059669; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 30px; max-width: 400px; text-align: center; }
+        .modal-content h2 { font-size: 20px; margin-bottom: 15px; }
+        .modal-content p { margin-bottom: 20px; color: #cbd5e1; }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-buttons button { flex: 1; }
+        .summary-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }
+        .summary-item:last-child { border-bottom: none; }
+        .summary-value { font-weight: bold; color: #3b82f6; }
+        .activation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .activation-modal.hidden { display: none; }
+        .activation-content { background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 40px; max-width: 400px; text-align: center; }
+        .activation-content h2 { font-size: 24px; margin-bottom: 10px; color: #3b82f6; }
+        .activation-content p { color: #94a3b8; margin-bottom: 25px; font-size: 14px; }
+        .activation-input { width: 100%; padding: 12px; margin-bottom: 15px; font-size: 16px; border: 2px solid #334155; background: #0f172a; color: #e2e8f0; border-radius: 4px; }
+        .activation-input:focus { outline: none; border-color: #3b82f6; }
+        .activation-btn { width: 100%; padding: 12px; font-size: 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .activation-btn:hover { background: #2563eb; }
+        .activation-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cronómetro de Turnos</h1>
+
+        <!-- SETUP -->
+        <div id="setupPhase">
+            <div class="section">
+                <h2>Configurar Jugadores</h2>
+                <div class="input-group">
+                    <input type="text" id="playerInput" placeholder="Nombre jugador">
+                    <button onclick="addPlayer()">Agregar</button>
+                </div>
+                <div class="quick-btns">
+                    <button onclick="quickAdd(2)">2 jugadores</button>
+                    <button onclick="quickAdd(3)">3 jugadores</button>
+                    <button onclick="quickAdd(4)">4 jugadores</button>
+                    <button onclick="quickAdd(5)">5 jugadores</button>
+                </div>
+                <div id="playersList" class="players-list" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="section">
+                <h2>Tiempo por turno (segundos)</h2>
+                <div class="input-group">
+                    <input type="number" id="timeInput" value="60" min="10">
+                    <button onclick="setTime()">Establecer</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Puntuación objetivo</h2>
+                <div class="input-group">
+                    <input type="number" id="scoreInput" value="21" min="1">
+                    <button onclick="setScore()">Establecer</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="success" style="width: 100%; padding: 12px;" onclick="startGame()">COMENZAR PARTIDA</button>
+                <button class="secondary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="clearAll()">Limpiar todo</button>
+            </div>
+        </div>
+
+        <!-- JUEGO -->
+        <div id="gamePhase" class="hidden">
+            <div class="section game-display">
+                <div class="game-number" id="gameNum">Juego 1</div>
+                <div class="player-turn" id="playerName">Jugador</div>
+                <div class="timer" id="timer">00:00</div>
+            </div>
+
+            <div class="controls">
+                <button id="pauseBtn" onclick="togglePause()">Pausar</button>
+                <button onclick="nextPlayer()">Siguiente</button>
+                <button class="danger" onclick="finishGame()">Terminar juego</button>
+            </div>
+        </div>
+
+        <!-- ANOTAR PUNTOS -->
+        <div id="scoringPhase" class="hidden">
+            <div class="section">
+                <h2>📊 Anotar puntos del Juego <span id="gameNum2">1</span></h2>
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Escribe los puntos que marcó cada jugador en este juego (0 si no anotó nada o déjalo en blanco)</p>
+                <div id="scoringBoard" class="scoreboard"></div>
+                <button class="success" style="width: 100%; padding: 12px; margin-top: 20px;" onclick="allScoresEntered()">Continuar</button>
+            </div>
+        </div>
+
+        <!-- RESUMEN DE JUEGOS -->
+        <div id="summaryPhase" class="hidden">
+            <div class="section">
+                <h2>📋 Resumen de Juegos</h2>
+                <div id="summaryContent" style="margin-bottom: 20px;"></div>
+                <button class="success" style="width: 100%; padding: 12px;" onclick="viewSummary()">Ver detalle</button>
+                <button class="secondary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="closeSummary()">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ENTRE JUEGOS -->
+    <div id="betweenModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Juego Terminado</h2>
+            <div id="summary" style="margin-bottom: 20px;"></div>
+            <div class="modal-buttons">
+                <button class="success" onclick="nextGameStart()">Siguiente juego</button>
+                <button class="secondary" onclick="backToSetup()">Terminar partida</button>
+                <button class="secondary" style="background: #8b5cf6;" onclick="downloadPDF()">📥 Descargar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GANADOR -->
+    <div id="winnerModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="font-size: 24px; color: #fbbf24; margin-bottom: 20px;">🏆 ¡GANADOR!</h2>
+            <p id="winnerName" style="font-size: 20px; font-weight: bold; margin-bottom: 10px;"></p>
+            <p id="winnerScore"></p>
+            <div class="modal-buttons">
+                <button class="success" onclick="newMatch()">Nueva partida</button>
+                <button class="secondary" onclick="backToSetup()">Salir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ACTIVACIÓN -->
+    <div id="activationModal" class="activation-modal">
+        <div class="activation-content">
+            <h2>🔐 Activación</h2>
+            <p>Ingresa el código de activación para acceder</p>
+            <input type="password" id="activationCode" class="activation-input" placeholder="Código de activación" onkeypress="if(event.key==='Enter') checkActivation()">
+            <button class="activation-btn" onclick="checkActivation()">Activar</button>
+            <div class="activation-error" id="activationError">Código incorrecto. Intenta de nuevo.</div>
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+        let current = 0;
+        let timeLimit = 60;
+        let timeLeft = 60;
+        let scoreObjective = 21;
+        let gameNum = 1;
+        let playing = false;
+        let paused = false;
+        let timerInterval = null;
+        let gameHistory = [];
+        
+        const ACTIVATION_CODE = 'Vbg08051963@';
+
+        function checkActivation() {
+            const code = document.getElementById('activationCode').value;
+            if (code === ACTIVATION_CODE) {
+                document.getElementById('activationModal').classList.add('hidden');
+                document.getElementById('activationCode').value = '';
+            } else {
+                document.getElementById('activationError').style.display = 'block';
+                document.getElementById('activationCode').value = '';
+                document.getElementById('activationCode').focus();
+                setTimeout(() => {
+                    document.getElementById('activationError').style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function addPlayer() {
+            const inp = document.getElementById('playerInput');
+            const name = inp.value.trim();
+            if (name && players.length < 10) {
+                players.push({ name, score: 0 });
+                inp.value = '';
+                showPlayers();
+            }
+        }
+
+        function quickAdd(n) {
+            players = [];
+            for (let i = 1; i <= n; i++) {
+                players.push({ name: `Jugador ${i}`, score: 0 });
+            }
+            showPlayers();
+        }
+
+        function showPlayers() {
+            const list = document.getElementById('playersList');
+            list.innerHTML = players.map((p, i) => `
+                <div class="player-item">
+                    <div>${p.name}</div>
+                    <button class="secondary" onclick="removePlayer(${i})">Quitar</button>
+                </div>
+            `).join('');
+        }
+
+        function removePlayer(i) {
+            players.splice(i, 1);
+            showPlayers();
+        }
+
+        function clearAll() {
+            players = [];
+            showPlayers();
+        }
+
+        function setTime() {
+            timeLimit = parseInt(document.getElementById('timeInput').value) || 60;
+        }
+
+        function setScore() {
+            scoreObjective = parseInt(document.getElementById('scoreInput').value) || 21;
+        }
+
+        function startGame() {
+            if (players.length < 2) {
+                alert('Necesitas al menos 2 jugadores');
+                return;
+            }
+            playing = true;
+            current = 0;
+            gameNum = 1;
+            timeLeft = timeLimit;
+            paused = false;
+            
+            document.getElementById('setupPhase').classList.add('hidden');
+            document.getElementById('gamePhase').classList.remove('hidden');
+            
+            updateGame();
+            startClock();
+        }
+
+        function startClock() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!paused && playing) {
+                    timeLeft--;
+                    if (timeLeft < 0) timeLeft = 0;
+                    updateTimer();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            const t = document.getElementById('timer');
+            t.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            
+            t.className = 'timer';
+            if (timeLeft > timeLimit * 0.3) return;
+            if (timeLeft > 0) t.classList.add('warning');
+            else t.classList.add('danger');
+        }
+
+        function togglePause() {
+            paused = !paused;
+            document.getElementById('pauseBtn').textContent = paused ? 'Reanudar' : 'Pausar';
+        }
+
+        function nextPlayer() {
+            current = (current + 1) % players.length;
+            timeLeft = timeLimit;
+            paused = false;
+            document.getElementById('pauseBtn').textContent = 'Pausar';
+            updateGame();
+        }
+
+        function updateGame() {
+            document.getElementById('gameNum').textContent = `Juego ${gameNum}`;
+            document.getElementById('gameNum2').textContent = gameNum;
+            document.getElementById('playerName').textContent = players[current].name;
+            updateTimer();
+        }
+
+        function addScore(i, val) {
+            const v = parseInt(val);
+            if (v > 0) {
+                players[i].score += v;
+                document.getElementById(`inp-${i}`).value = '';
+                updateScoreboard();
+                
+                if (players[i].score >= scoreObjective) {
+                    showWinner(i);
+                }
+            }
+        }
+
+        function updateScoreboard() {
+            const board = document.getElementById('scoreboard');
+            board.innerHTML = players.map((p, i) => `
+                <div class="score-card ${p.score >= scoreObjective ? 'winner' : ''}">
+                    <div class="score-name">${p.name}</div>
+                    <div class="score-value">${p.score}</div>
+                    <div class="score-label">/ ${scoreObjective}</div>
+                    <div class="score-input">
+                        <input type="number" id="inp-${i}" placeholder="Anotar" min="1">
+                        <button onclick="addScore(${i}, document.getElementById('inp-${i}').value)">Sumar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function finishGame() {
+            playing = false;
+            clearInterval(timerInterval);
+            
+            // Mostrar pantalla de anotación de puntos
+            document.getElementById('gamePhase').classList.add('hidden');
+            document.getElementById('scoringPhase').classList.remove('hidden');
+            updateScoringScreen();
+        }
+
+        function updateScoringScreen() {
+            const scoring = document.getElementById('scoringBoard');
+            scoring.innerHTML = players.map((p, i) => `
+                <div class="score-card" style="margin-bottom: 20px;">
+                    <div class="score-name">${p.name}</div>
+                    <div class="score-value" id="scoreVal-${i}">${p.score}</div>
+                    <div class="score-label">Puntos acumulados</div>
+                    <input type="number" id="inp-${i}" placeholder="Puntos (0 o más)" min="0" style="width: 100%; padding: 10px 12px; background: #1e293b; border: 2px solid #3b82f6; color: #e2e8f0; border-radius: 6px; font-size: 16px; font-weight: 600; text-align: center; margin-top: 12px;">
+                </div>
+            `).join('');
+        }
+
+        function allScoresEntered() {
+            // Anotar todos los puntos a la vez
+            players.forEach((p, i) => {
+                const v = parseInt(document.getElementById(`inp-${i}`).value) || 0;
+                p.score += v;
+                
+                // Guardar en histórico
+                if (!gameHistory[gameNum - 1]) {
+                    gameHistory[gameNum - 1] = {};
+                }
+                gameHistory[gameNum - 1][p.name] = v;
+            });
+            
+            // Verificar si alguien ganó
+            for (let i = 0; i < players.length; i++) {
+                if (players[i].score >= scoreObjective) {
+                    showWinner(i);
+                    return;
+                }
+            }
+            
+            // Si nadie ganó, mostrar modal con resumen
+            document.getElementById('scoringPhase').classList.add('hidden');
+            document.getElementById('betweenModal').classList.remove('hidden');
+            
+            const sum = document.getElementById('summary');
+            sum.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #94a3b8; margin-bottom: 10px; font-size: 14px;">Puntuación Total:</h3>
+                    ${players.map(p => `
+                        <div class="summary-item">
+                            <span>${p.name}</span>
+                            <span class="summary-value">${p.score}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="border-top: 1px solid #334155; padding-top: 15px;">
+                    <h3 style="color: #94a3b8; margin-bottom: 10px; font-size: 14px;">Puntos de este juego (Juego ${gameNum}):</h3>
+                    ${players.map(p => `
+                        <div class="summary-item">
+                            <span>${p.name}</span>
+                            <span class="summary-value">${gameHistory[gameNum - 1] && gameHistory[gameNum - 1][p.name] ? gameHistory[gameNum - 1][p.name] : 0}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function viewSummary() {
+            document.getElementById('betweenModal').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.remove('hidden');
+            
+            const content = document.getElementById('summaryContent');
+            let html = '';
+            gameHistory.forEach((game, idx) => {
+                html += `<div style="margin-bottom: 15px; padding: 10px; background: #0f172a; border-radius: 4px;">`;
+                html += `<h4 style="color: #3b82f6; margin-bottom: 8px;">Juego ${idx + 1}</h4>`;
+                players.forEach(p => {
+                    const pts = game[p.name] || 0;
+                    html += `<div class="summary-item"><span>${p.name}</span><span class="summary-value">${pts}</span></div>`;
+                });
+                html += `</div>`;
+            });
+            content.innerHTML = html;
+        }
+
+        function closeSummary() {
+            document.getElementById('summaryPhase').classList.add('hidden');
+            document.getElementById('betweenModal').classList.remove('hidden');
+        }
+
+        function nextGameStart() {
+            gameNum++;
+            playing = true;
+            current = 0;
+            timeLeft = timeLimit;
+            paused = false;
+            
+            document.getElementById('betweenModal').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.add('hidden');
+            document.getElementById('gamePhase').classList.remove('hidden');
+            updateGame();
+            startClock();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let y = 15;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 10;
+            const lineHeight = 7;
+            
+            // Título
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('📊 Histórico de Partida', margin, y);
+            y += 10;
+            
+            // Fecha
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            const now = new Date();
+            doc.text(`Fecha: ${now.toLocaleDateString('es-ES')} ${now.toLocaleTimeString('es-ES')}`, margin, y);
+            y += 8;
+            
+            // Tabla de juegos
+            doc.setFont(undefined, 'bold');
+            doc.text('Juego', margin, y);
+            doc.text('Jugador', margin + 25, y);
+            doc.text('Puntos', margin + 85, y);
+            doc.text('Total', margin + 110, y);
+            y += lineHeight + 2;
+            
+            doc.setDrawColor(200);
+            doc.line(margin, y - 1, 200, y - 1);
+            doc.setFont(undefined, 'normal');
+            
+            // Llenar tabla con histórico
+            gameHistory.forEach((game, gameIdx) => {
+                let isFirstPlayerOfGame = true;
+                players.forEach((player, pIdx) => {
+                    if (y > pageHeight - margin) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    
+                    const pointsThisGame = game[player.name] || 0;
+                    const totalScore = players[pIdx].score;
+                    
+                    if (isFirstPlayerOfGame) {
+                        doc.text(`${gameIdx + 1}`, margin, y);
+                        isFirstPlayerOfGame = false;
+                    }
+                    
+                    doc.text(player.name, margin + 25, y);
+                    doc.text(pointsThisGame.toString(), margin + 85, y);
+                    doc.text(totalScore.toString(), margin + 110, y);
+                    y += lineHeight;
+                });
+                
+                y += 2;
+            });
+            
+            // Resultado final
+            y += 5;
+            doc.setFont(undefined, 'bold');
+            doc.text('Puntuación Final', margin, y);
+            y += lineHeight + 2;
+            
+            doc.setDrawColor(200);
+            doc.line(margin, y - 1, 200, y - 1);
+            doc.setFont(undefined, 'normal');
+            
+            players.forEach(player => {
+                if (y > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+                doc.text(player.name, margin, y);
+                doc.text(player.score.toString(), margin + 110, y);
+                y += lineHeight;
+            });
+            
+            // Descargar
+            doc.save(`partida-${new Date().getTime()}.pdf`);
+        }
+
+        function showWinner(i) {
+            playing = false;
+            clearInterval(timerInterval);
+            
+            document.getElementById('scoringPhase').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.add('hidden');
+            
+            const p = players[i];
+            document.getElementById('winnerName').textContent = p.name;
+            document.getElementById('winnerScore').textContent = `${p.score} puntos`;
+            
+            document.getElementById('winnerModal').classList.remove('hidden');
+        }
+
+        function newMatch() {
+            players.forEach(p => p.score = 0);
+            current = 0;
+            gameNum = 1;
+            timeLeft = timeLimit;
+            playing = true;
+            paused = false;
+            gameHistory = [];
+            
+            document.getElementById('winnerModal').classList.add('hidden');
+            document.getElementById('scoringPhase').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.add('hidden');
+            document.getElementById('gamePhase').classList.remove('hidden');
+            updateGame();
+            startClock();
+        }
+
+        function backToSetup() {
+            playing = false;
+            clearInterval(timerInterval);
+            
+            players = [];
+            current = 0;
+            gameNum = 1;
+            timeLeft = timeLimit;
+            paused = false;
+            gameHistory = [];
+            
+            document.getElementById('setupPhase').classList.remove('hidden');
+            document.getElementById('gamePhase').classList.add('hidden');
+            document.getElementById('scoringPhase').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.add('hidden');
+            document.getElementById('betweenModal').classList.add('hidden');
+            document.getElementById('winnerModal').classList.add('hidden');
+            
+            showPlayers();
+        }
+    </script>
+</body>
+</html>
