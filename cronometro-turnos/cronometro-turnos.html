@@ -218,11 +218,9 @@
         
         const ACTIVATION_CODE = 'Vbg08051963@';
         let alarmaSonada = false;
+        let alarmInterval = null;
 
         function playAlarm() {
-            if (alarmaSonada) return; // Solo una vez por turno
-            alarmaSonada = true;
-            
             try {
                 // Crear sonido usando Web Audio API
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -232,17 +230,32 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                oscillator.frequency.value = 800; // Frecuencia en Hz
-                oscillator.type = 'sine';
+                oscillator.frequency.value = 1000; // Frecuencia más alta
+                oscillator.type = 'square'; // Onda cuadrada para más volumen
                 
-                gainNode.gain.setValueAtTime(0.7, audioContext.currentTime); // Aumentado de 0.3 a 0.7
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1); // Duración de 1 segundo
+                gainNode.gain.setValueAtTime(0.9, audioContext.currentTime); // Volumen máximo
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
                 
                 oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 1);
+                oscillator.stop(audioContext.currentTime + 0.3);
             } catch (e) {
                 console.log('Error en alarma:', e);
             }
+        }
+
+        function startAlarmLoop() {
+            if (alarmInterval) clearInterval(alarmInterval);
+            // Tocar alarma cada 400ms mientras el tiempo esté agotado
+            alarmInterval = setInterval(() => {
+                if (timeLeft === 0 && playing && !paused) {
+                    playAlarm();
+                }
+            }, 400);
+        }
+
+        function stopAlarmLoop() {
+            if (alarmInterval) clearInterval(alarmInterval);
+            alarmInterval = null;
         }
 
         function checkActivation() {
@@ -327,6 +340,7 @@
                 alert('Necesitas al menos 2 jugadores');
                 return;
             }
+            stopAlarmLoop(); // Detener alarma anterior
             playing = true;
             current = 0;
             gameNum = 1;
@@ -363,7 +377,7 @@
             if (timeLeft > 0) t.classList.add('warning');
             else {
                 t.classList.add('danger');
-                if (timeLeft === 0) playAlarm(); // Alarma cuando se acaba
+                if (timeLeft === 0) startAlarmLoop(); // Alarma continua
             }
         }
 
@@ -373,9 +387,10 @@
         }
 
         function nextPlayer() {
+            stopAlarmLoop(); // Detener alarma
             current = (current + 1) % players.length;
             timeLeft = timeLimit;
-            alarmaSonada = false; // Resetear alarma para el nuevo jugador
+            alarmaSonada = false;
             paused = false;
             document.getElementById('pauseBtn').textContent = 'Pausar';
             updateGame();
@@ -672,7 +687,8 @@
         function clearHistory() {
             if (confirm('¿Estás seguro de que quieres eliminar TODO el historial?')) {
                 localStorage.removeItem('cronometro-historial');
-                viewHistory(); // Refrescar vista
+                document.getElementById('historyContent').innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">📜 Historial vacío</div>';
+                console.log('✅ Historial eliminado');
             }
         }
 
@@ -696,6 +712,7 @@
         function backToSetup() {
             playing = false;
             clearInterval(timerInterval);
+            stopAlarmLoop(); // Detener alarma
             
             players = [];
             current = 0;
