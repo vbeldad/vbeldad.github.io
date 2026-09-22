@@ -143,7 +143,6 @@
                 <button id="pauseBtn" onclick="togglePause()">Pausar</button>
                 <button onclick="nextPlayer()">Siguiente</button>
                 <button class="danger" onclick="finishGame()">Terminar juego</button>
-                <button class="danger" style="background: #d946ef;" onclick="endMatchEarly()">❌ Terminar partida</button>
             </div>
         </div>
 
@@ -175,7 +174,7 @@
             <div id="summary" style="margin-bottom: 20px;"></div>
             <div class="modal-buttons">
                 <button class="success" onclick="nextGameStart()">Siguiente juego</button>
-                <button class="secondary" onclick="backToSetup()">Terminar partida</button>
+                <button class="secondary" style="background: #d946ef;" onclick="finalizeMatch()">❌ Finalizar partida</button>
                 <button class="secondary" style="background: #8b5cf6;" onclick="downloadPDF()">📥 Descargar PDF</button>
             </div>
         </div>
@@ -220,7 +219,6 @@
         const ACTIVATION_CODE = 'Vbg08051963@';
         let alarmaSonada = false;
         let alarmInterval = null;
-        let earlyEndMatch = false;
 
         function playAlarm() {
             try {
@@ -443,20 +441,6 @@
             updateScoringScreen();
         }
 
-        function endMatchEarly() {
-            if (confirm('¿Quieres terminar la partida ahora? Primero anotarás los últimos puntos.')) {
-                stopAlarmLoop();
-                playing = false;
-                clearInterval(timerInterval);
-                
-                // Ir a la pantalla de anotación de puntos del juego actual
-                document.getElementById('gamePhase').classList.add('hidden');
-                document.getElementById('scoringPhase').classList.remove('hidden');
-                updateScoringScreen();
-                
-                // Marcar que la partida está siendo terminada manualmente
-                earlyEndMatch = true;
-            }
         }
 
         function updateScoringScreen() {
@@ -483,43 +467,6 @@
                 }
                 gameHistory[gameNum - 1][p.name] = v;
             });
-            
-            // Si se terminó la partida manualmente
-            if (earlyEndMatch) {
-                earlyEndMatch = false;
-                
-                // Encontrar ganador (el con más puntos)
-                let winner = 0;
-                let maxScore = players[0].score;
-                for (let i = 1; i < players.length; i++) {
-                    if (players[i].score > maxScore) {
-                        maxScore = players[i].score;
-                        winner = i;
-                    }
-                }
-                
-                console.log('📌 Partida terminada manualmente. Ganador:', players[winner].name);
-                saveMatchToHistory(winner);
-                
-                // Volver a setup
-                players = [];
-                current = 0;
-                gameNum = 1;
-                timeLeft = timeLimit;
-                paused = false;
-                gameHistory = [];
-                
-                document.getElementById('setupPhase').classList.remove('hidden');
-                document.getElementById('gamePhase').classList.add('hidden');
-                document.getElementById('scoringPhase').classList.add('hidden');
-                document.getElementById('summaryPhase').classList.add('hidden');
-                document.getElementById('betweenModal').classList.add('hidden');
-                document.getElementById('winnerModal').classList.add('hidden');
-                
-                showPlayers();
-                alert('✅ Partida guardada en el historial');
-                return;
-            }
             
             // Verificar si alguien ganó
             for (let i = 0; i < players.length; i++) {
@@ -805,6 +752,39 @@
             document.getElementById('gamePhase').classList.remove('hidden');
             updateGame();
             startClock();
+        }
+
+        function finalizeMatch() {
+            // Encontrar ganador (el con más puntos)
+            let winner = 0;
+            let maxScore = players[0].score;
+            for (let i = 1; i < players.length; i++) {
+                if (players[i].score > maxScore) {
+                    maxScore = players[i].score;
+                    winner = i;
+                }
+            }
+            
+            console.log('📌 Partida finalizada. Ganador:', players[winner].name);
+            saveMatchToHistory(winner);
+            
+            // Volver a setup
+            players = [];
+            current = 0;
+            gameNum = 1;
+            timeLeft = timeLimit;
+            paused = false;
+            gameHistory = [];
+            
+            document.getElementById('setupPhase').classList.remove('hidden');
+            document.getElementById('gamePhase').classList.add('hidden');
+            document.getElementById('scoringPhase').classList.add('hidden');
+            document.getElementById('summaryPhase').classList.add('hidden');
+            document.getElementById('betweenModal').classList.add('hidden');
+            document.getElementById('winnerModal').classList.add('hidden');
+            
+            showPlayers();
+            alert('✅ Partida guardada en el historial');
         }
 
         function backToSetup() {
