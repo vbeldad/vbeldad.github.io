@@ -648,35 +648,67 @@
                     gameHistory: gameHistory
                 };
                 
-                let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
+                console.log('📌 Intentando guardar partida...');
+                console.log('Datos:', matchData);
+                
+                // Obtener historial actual
+                const currentHistory = localStorage.getItem('cronometro-historial');
+                console.log('Historial actual en localStorage:', currentHistory);
+                
+                let history = [];
+                if (currentHistory) {
+                    history = JSON.parse(currentHistory);
+                }
+                
                 history.push(matchData);
-                localStorage.setItem('cronometro-historial', JSON.stringify(history));
-                console.log('✅ Partida guardada:', matchData);
+                const jsonString = JSON.stringify(history);
+                console.log('Guardando:', jsonString);
+                
+                localStorage.setItem('cronometro-historial', jsonString);
+                
+                // Verificar que se guardó
+                const verificar = localStorage.getItem('cronometro-historial');
+                console.log('✅ Partida guardada. Verificación:', verificar);
+                
             } catch (e) {
                 console.error('❌ Error guardando historial:', e);
+                alert('Error guardando la partida: ' + e.message);
             }
         }
 
         function viewHistory() {
-            let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
-            
-            if (history.length === 0) {
-                alert('No hay partidas guardadas aún');
-                return;
-            }
-            
-            document.getElementById('historyContent').innerHTML = history.map((match, idx) => `
-                <div class="history-match" style="background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="color: #94a3b8; font-size: 12px; margin-bottom: 8px;">${match.date}</div>
-                    <div style="color: #10b981; font-size: 14px; font-weight: 600; margin-bottom: 10px;">🏆 Ganador: ${match.winner}</div>
-                    <div style="font-size: 12px; color: #cbd5e1;">
-                        ${match.players.map(p => `<div>${p.name}: <span style="color: #3b82f6; font-weight: 600;">${p.score}</span> pts</div>`).join('')}
+            try {
+                const historialStr = localStorage.getItem('cronometro-historial');
+                console.log('📖 Historial en localStorage:', historialStr);
+                
+                let history = [];
+                if (historialStr) {
+                    history = JSON.parse(historialStr);
+                }
+                
+                console.log('Partidas guardadas:', history.length);
+                
+                if (history.length === 0) {
+                    alert('No hay partidas guardadas aún');
+                    return;
+                }
+                
+                document.getElementById('historyContent').innerHTML = history.map((match, idx) => `
+                    <div class="history-match" style="background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="color: #94a3b8; font-size: 12px; margin-bottom: 8px;">${match.date}</div>
+                        <div style="color: #10b981; font-size: 14px; font-weight: 600; margin-bottom: 10px;">🏆 Ganador: ${match.winner}</div>
+                        <div style="font-size: 12px; color: #cbd5e1;">
+                            ${match.players.map(p => `<div>${p.name}: <span style="color: #3b82f6; font-weight: 600;">${p.score}</span> pts</div>`).join('')}
+                        </div>
                     </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('setupPhase').classList.add('hidden');
-            document.getElementById('historyPhase').classList.remove('hidden');
+                `).join('');
+                
+                document.getElementById('setupPhase').classList.add('hidden');
+                document.getElementById('historyPhase').classList.remove('hidden');
+            } catch (e) {
+                console.error('❌ Error viendo historial:', e);
+                alert('Error: ' + e.message);
+            }
         }
 
         function backFromHistory() {
@@ -686,9 +718,20 @@
 
         function clearHistory() {
             if (confirm('¿Estás seguro de que quieres eliminar TODO el historial?')) {
-                localStorage.removeItem('cronometro-historial');
-                document.getElementById('historyContent').innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">📜 Historial vacío</div>';
-                console.log('✅ Historial eliminado');
+                try {
+                    console.log('🗑️ Eliminando historial...');
+                    localStorage.removeItem('cronometro-historial');
+                    
+                    // Verificar que se eliminó
+                    const verificar = localStorage.getItem('cronometro-historial');
+                    console.log('✅ Historial eliminado. Verificación:', verificar);
+                    
+                    document.getElementById('historyContent').innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">📜 Historial vacío</div>';
+                    alert('Historial eliminado correctamente');
+                } catch (e) {
+                    console.error('❌ Error eliminando historial:', e);
+                    alert('Error: ' + e.message);
+                }
             }
         }
 
