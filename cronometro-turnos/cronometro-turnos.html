@@ -117,6 +117,16 @@
             <div class="section">
                 <button class="success" style="width: 100%; padding: 12px;" onclick="startGame()">COMENZAR PARTIDA</button>
                 <button class="secondary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="clearAll()">Limpiar todo</button>
+                <button class="secondary" style="width: 100%; padding: 12px; margin-top: 10px; background: #8b5cf6;" onclick="viewHistory()">📜 Ver Historial</button>
+            </div>
+        </div>
+
+        <!-- HISTORIAL DE PARTIDAS -->
+        <div id="historyPhase" class="hidden">
+            <div class="section">
+                <h2>📜 Historial de Partidas</h2>
+                <div id="historyContent" style="max-height: 500px; overflow-y: auto; margin-bottom: 20px;"></div>
+                <button class="secondary" style="width: 100%; padding: 12px;" onclick="backFromHistory()">Volver</button>
             </div>
         </div>
 
@@ -206,6 +216,29 @@
         let gameHistory = [];
         
         const ACTIVATION_CODE = 'Vbg08051963@';
+        let alarmaSonada = false;
+
+        function playAlarm() {
+            if (alarmaSonada) return; // Solo una vez por turno
+            alarmaSonada = true;
+            
+            // Crear sonido usando Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800; // Frecuencia en Hz
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
 
         function checkActivation() {
             const code = document.getElementById('activationCode').value;
@@ -293,6 +326,7 @@
             current = 0;
             gameNum = 1;
             timeLeft = timeLimit;
+            alarmaSonada = false; // Resetear alarma
             paused = false;
             
             document.getElementById('setupPhase').classList.add('hidden');
@@ -322,7 +356,10 @@
             t.className = 'timer';
             if (timeLeft > timeLimit * 0.3) return;
             if (timeLeft > 0) t.classList.add('warning');
-            else t.classList.add('danger');
+            else {
+                t.classList.add('danger');
+                if (timeLeft === 0) playAlarm(); // Alarma cuando se acaba
+            }
         }
 
         function togglePause() {
@@ -333,6 +370,7 @@
         function nextPlayer() {
             current = (current + 1) % players.length;
             timeLeft = timeLimit;
+            alarmaSonada = false; // Resetear alarma para el nuevo jugador
             paused = false;
             document.getElementById('pauseBtn').textContent = 'Pausar';
             updateGame();
@@ -568,6 +606,9 @@
             playing = false;
             clearInterval(timerInterval);
             
+            // Guardar partida en historial
+            saveMatchToHistory(i);
+            
             document.getElementById('scoringPhase').classList.add('hidden');
             document.getElementById('summaryPhase').classList.add('hidden');
             
@@ -576,6 +617,46 @@
             document.getElementById('winnerScore').textContent = `${p.score} puntos`;
             
             document.getElementById('winnerModal').classList.remove('hidden');
+        }
+
+        function saveMatchToHistory(winnerIndex) {
+            const matchData = {
+                date: new Date().toLocaleString('es-ES'),
+                winner: players[winnerIndex].name,
+                players: players.map(p => ({ name: p.name, score: p.score })),
+                gameHistory: gameHistory
+            };
+            
+            let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
+            history.push(matchData);
+            localStorage.setItem('cronometro-historial', JSON.stringify(history));
+        }
+
+        function viewHistory() {
+            let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
+            
+            if (history.length === 0) {
+                alert('No hay partidas guardadas aún');
+                return;
+            }
+            
+            document.getElementById('historyContent').innerHTML = history.map((match, idx) => `
+                <div class="history-match" style="background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="color: #94a3b8; font-size: 12px; margin-bottom: 8px;">${match.date}</div>
+                    <div style="color: #10b981; font-size: 14px; font-weight: 600; margin-bottom: 10px;">🏆 Ganador: ${match.winner}</div>
+                    <div style="font-size: 12px; color: #cbd5e1;">
+                        ${match.players.map(p => `<div>${p.name}: <span style="color: #3b82f6; font-weight: 600;">${p.score}</span> pts</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('setupPhase').classList.add('hidden');
+            document.getElementById('historyPhase').classList.remove('hidden');
+        }
+
+        function backFromHistory() {
+            document.getElementById('historyPhase').classList.add('hidden');
+            document.getElementById('setupPhase').classList.remove('hidden');
         }
 
         function newMatch() {
