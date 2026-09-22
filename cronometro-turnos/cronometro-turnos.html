@@ -220,6 +220,7 @@
         const ACTIVATION_CODE = 'Vbg08051963@';
         let alarmaSonada = false;
         let alarmInterval = null;
+        let earlyEndMatch = false;
 
         function playAlarm() {
             try {
@@ -443,10 +444,49 @@
         }
 
         function endMatchEarly() {
-            if (confirm('¿Quieres terminar la partida ahora? Se guardará en el historial.')) {
+            if (confirm('¿Quieres terminar la partida ahora? Primero anotarás los últimos puntos.')) {
                 stopAlarmLoop();
                 playing = false;
                 clearInterval(timerInterval);
+                
+                // Ir a la pantalla de anotación de puntos del juego actual
+                document.getElementById('gamePhase').classList.add('hidden');
+                document.getElementById('scoringPhase').classList.remove('hidden');
+                updateScoringScreen();
+                
+                // Marcar que la partida está siendo terminada manualmente
+                earlyEndMatch = true;
+            }
+        }
+
+        function updateScoringScreen() {
+            const scoring = document.getElementById('scoringBoard');
+            scoring.innerHTML = players.map((p, i) => `
+                <div class="score-card" style="margin-bottom: 20px;">
+                    <div class="score-name">${p.name}</div>
+                    <div class="score-value" id="scoreVal-${i}">${p.score}</div>
+                    <div class="score-label">Puntos acumulados</div>
+                    <input type="number" id="inp-${i}" placeholder="Puntos (0 o más)" min="0" style="width: 100%; padding: 10px 12px; background: #1e293b; border: 2px solid #3b82f6; color: #e2e8f0; border-radius: 6px; font-size: 16px; font-weight: 600; text-align: center; margin-top: 12px;">
+                </div>
+            `).join('');
+        }
+
+        function allScoresEntered() {
+            // Anotar todos los puntos a la vez
+            players.forEach((p, i) => {
+                const v = parseInt(document.getElementById(`inp-${i}`).value) || 0;
+                p.score += v;
+                
+                // Guardar en histórico
+                if (!gameHistory[gameNum - 1]) {
+                    gameHistory[gameNum - 1] = {};
+                }
+                gameHistory[gameNum - 1][p.name] = v;
+            });
+            
+            // Si se terminó la partida manualmente
+            if (earlyEndMatch) {
+                earlyEndMatch = false;
                 
                 // Encontrar ganador (el con más puntos)
                 let winner = 0;
@@ -478,33 +518,8 @@
                 
                 showPlayers();
                 alert('✅ Partida guardada en el historial');
+                return;
             }
-        }
-
-        function updateScoringScreen() {
-            const scoring = document.getElementById('scoringBoard');
-            scoring.innerHTML = players.map((p, i) => `
-                <div class="score-card" style="margin-bottom: 20px;">
-                    <div class="score-name">${p.name}</div>
-                    <div class="score-value" id="scoreVal-${i}">${p.score}</div>
-                    <div class="score-label">Puntos acumulados</div>
-                    <input type="number" id="inp-${i}" placeholder="Puntos (0 o más)" min="0" style="width: 100%; padding: 10px 12px; background: #1e293b; border: 2px solid #3b82f6; color: #e2e8f0; border-radius: 6px; font-size: 16px; font-weight: 600; text-align: center; margin-top: 12px;">
-                </div>
-            `).join('');
-        }
-
-        function allScoresEntered() {
-            // Anotar todos los puntos a la vez
-            players.forEach((p, i) => {
-                const v = parseInt(document.getElementById(`inp-${i}`).value) || 0;
-                p.score += v;
-                
-                // Guardar en histórico
-                if (!gameHistory[gameNum - 1]) {
-                    gameHistory[gameNum - 1] = {};
-                }
-                gameHistory[gameNum - 1][p.name] = v;
-            });
             
             // Verificar si alguien ganó
             for (let i = 0; i < players.length; i++) {
