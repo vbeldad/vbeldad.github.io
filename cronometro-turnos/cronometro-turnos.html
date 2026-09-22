@@ -143,6 +143,7 @@
                 <button id="pauseBtn" onclick="togglePause()">Pausar</button>
                 <button onclick="nextPlayer()">Siguiente</button>
                 <button class="danger" onclick="finishGame()">Terminar juego</button>
+                <button class="danger" style="background: #d946ef;" onclick="endMatchEarly()">❌ Terminar partida</button>
             </div>
         </div>
 
@@ -439,6 +440,45 @@
             document.getElementById('gamePhase').classList.add('hidden');
             document.getElementById('scoringPhase').classList.remove('hidden');
             updateScoringScreen();
+        }
+
+        function endMatchEarly() {
+            if (confirm('¿Quieres terminar la partida ahora? Se guardará en el historial.')) {
+                stopAlarmLoop();
+                playing = false;
+                clearInterval(timerInterval);
+                
+                // Encontrar ganador (el con más puntos)
+                let winner = 0;
+                let maxScore = players[0].score;
+                for (let i = 1; i < players.length; i++) {
+                    if (players[i].score > maxScore) {
+                        maxScore = players[i].score;
+                        winner = i;
+                    }
+                }
+                
+                console.log('📌 Partida terminada manualmente. Ganador:', players[winner].name);
+                saveMatchToHistory(winner);
+                
+                // Volver a setup
+                players = [];
+                current = 0;
+                gameNum = 1;
+                timeLeft = timeLimit;
+                paused = false;
+                gameHistory = [];
+                
+                document.getElementById('setupPhase').classList.remove('hidden');
+                document.getElementById('gamePhase').classList.add('hidden');
+                document.getElementById('scoringPhase').classList.add('hidden');
+                document.getElementById('summaryPhase').classList.add('hidden');
+                document.getElementById('betweenModal').classList.add('hidden');
+                document.getElementById('winnerModal').classList.add('hidden');
+                
+                showPlayers();
+                alert('✅ Partida guardada en el historial');
+            }
         }
 
         function updateScoringScreen() {
