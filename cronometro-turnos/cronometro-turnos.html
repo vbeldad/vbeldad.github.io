@@ -759,10 +759,10 @@
         function finalizeMatch() {
             // Encontrar ganador (el con más puntos)
             let winner = 0;
-            let maxScore = players[0].score;
+            let minScore = players[0].score;
             for (let i = 1; i < players.length; i++) {
-                if (players[i].score > maxScore) {
-                    maxScore = players[i].score;
+                if (players[i].score < minScore) {
+                    minScore = players[i].score;
                     winner = i;
                 }
             }
