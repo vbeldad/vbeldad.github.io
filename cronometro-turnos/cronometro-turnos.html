@@ -209,7 +209,7 @@
         let current = 0;
         let timeLimit = 60;
         let timeLeft = 60;
-        let scoreObjective = 21;
+        let scoreObjective = 100;
         let gameNum = 1;
         let playing = false;
         let paused = false;
@@ -630,13 +630,23 @@
             playing = false;
             clearInterval(timerInterval);
             
+            // Encontrar ganador (el con MENOS puntos)
+            let winner = 0;
+            let minScore = players[0].score;
+            for (let j = 1; j < players.length; j++) {
+                if (players[j].score < minScore) {
+                    minScore = players[j].score;
+                    winner = j;
+                }
+            }
+            
             // Guardar partida en historial
-            saveMatchToHistory(i);
+            saveMatchToHistory(winner);
             
             document.getElementById('scoringPhase').classList.add('hidden');
             document.getElementById('summaryPhase').classList.add('hidden');
             
-            const p = players[i];
+            const p = players[winner];
             document.getElementById('winnerName').textContent = p.name;
             document.getElementById('winnerScore').textContent = `${p.score} puntos`;
             
