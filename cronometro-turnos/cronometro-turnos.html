@@ -264,6 +264,7 @@
                 localStorage.setItem('cronometro-activado', 'true');
                 document.getElementById('activationModal').classList.add('hidden');
                 document.getElementById('activationCode').value = '';
+                showPlayers(); // Mostrar la pantalla de setup
             } else {
                 document.getElementById('activationError').style.display = 'block';
                 document.getElementById('activationCode').value = '';
@@ -279,6 +280,9 @@
             if (localStorage.getItem('cronometro-activado') !== 'true') {
                 document.getElementById('activationModal').classList.remove('hidden');
                 document.getElementById('activationCode').focus();
+            } else {
+                // Si ya está activada, mostrar la pantalla de setup
+                showPlayers();
             }
         }
 
