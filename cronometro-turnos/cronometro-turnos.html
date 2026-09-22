@@ -127,6 +127,7 @@
                 <h2>📜 Historial de Partidas</h2>
                 <div id="historyContent" style="max-height: 500px; overflow-y: auto; margin-bottom: 20px;"></div>
                 <button class="secondary" style="width: 100%; padding: 12px;" onclick="backFromHistory()">Volver</button>
+                <button class="secondary" style="width: 100%; padding: 12px; margin-top: 10px; background: #ef4444;" onclick="clearHistory()">🗑️ Limpiar Historial</button>
             </div>
         </div>
 
@@ -222,22 +223,26 @@
             if (alarmaSonada) return; // Solo una vez por turno
             alarmaSonada = true;
             
-            // Crear sonido usando Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800; // Frecuencia en Hz
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            try {
+                // Crear sonido usando Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800; // Frecuencia en Hz
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.7, audioContext.currentTime); // Aumentado de 0.3 a 0.7
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1); // Duración de 1 segundo
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch (e) {
+                console.log('Error en alarma:', e);
+            }
         }
 
         function checkActivation() {
@@ -620,16 +625,21 @@
         }
 
         function saveMatchToHistory(winnerIndex) {
-            const matchData = {
-                date: new Date().toLocaleString('es-ES'),
-                winner: players[winnerIndex].name,
-                players: players.map(p => ({ name: p.name, score: p.score })),
-                gameHistory: gameHistory
-            };
-            
-            let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
-            history.push(matchData);
-            localStorage.setItem('cronometro-historial', JSON.stringify(history));
+            try {
+                const matchData = {
+                    date: new Date().toLocaleString('es-ES'),
+                    winner: players[winnerIndex].name,
+                    players: players.map(p => ({ name: p.name, score: p.score })),
+                    gameHistory: gameHistory
+                };
+                
+                let history = JSON.parse(localStorage.getItem('cronometro-historial') || '[]');
+                history.push(matchData);
+                localStorage.setItem('cronometro-historial', JSON.stringify(history));
+                console.log('✅ Partida guardada:', matchData);
+            } catch (e) {
+                console.error('❌ Error guardando historial:', e);
+            }
         }
 
         function viewHistory() {
@@ -657,6 +667,13 @@
         function backFromHistory() {
             document.getElementById('historyPhase').classList.add('hidden');
             document.getElementById('setupPhase').classList.remove('hidden');
+        }
+
+        function clearHistory() {
+            if (confirm('¿Estás seguro de que quieres eliminar TODO el historial?')) {
+                localStorage.removeItem('cronometro-historial');
+                viewHistory(); // Refrescar vista
+            }
         }
 
         function newMatch() {
