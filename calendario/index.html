@@ -761,30 +761,10 @@
       </div>
 
       <div class="sidebar">
-        <!-- Filtros -->
+        <!-- Próximas citas - PRIMERO -->
         <div class="sidebar-card">
-          <h3>🔍 Filtros</h3>
-          <div class="filters-panel" id="filtersPanel">
-            <div class="filter-group">
-              <label>Tipo</label>
-              <div class="filter-options">
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-work"> 💼 Trabajo</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-personal"> 🏠 Personal</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-medical"> 🏥 Médica</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-other"> 📌 Otra</label>
-              </div>
-            </div>
-            <div class="filter-group">
-              <label>Fecha</label>
-              <div class="filter-options">
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-today"> Hoy</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-week"> Esta semana</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-month"> Este mes</label>
-                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-future"> Próximas</label>
-              </div>
-            </div>
-          </div>
-          <button onclick="app.limpiarFiltros()" style="width: 100%; font-size: 12px;">Limpiar filtros</button>
+          <h3>⏰ Próximas</h3>
+          <div class="citas-list" id="citasList"></div>
         </div>
 
         <!-- Agregar cita -->
@@ -841,10 +821,10 @@
           <div class="success" id="success"></div>
         </div>
 
-        <!-- Estadísticas -->
+        <!-- Estadísticas - COLAPSADO -->
         <div class="sidebar-card">
-          <h3>📊 Resumen</h3>
-          <div class="stats">
+          <button onclick="const panel = document.getElementById('statsPanel'); const typeStats = document.getElementById('typeStats'); panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; typeStats.style.display = panel.style.display; this.textContent = panel.style.display === 'none' ? '▶ 📊 Resumen' : '▼ 📊 Resumen'" style="background: none; border: none; color: var(--text-primary); cursor: pointer; width: 100%; text-align: left; font-weight: 600; padding: 0; font-size: 16px;">▶ 📊 Resumen</button>
+          <div class="stats" id="statsPanel" style="display: none; margin-top: 16px;">
             <div class="stat-card">
               <div class="stat-number" id="statTotal">0</div>
               <div class="stat-label">Total</div>
@@ -854,13 +834,33 @@
               <div class="stat-label">Próximas</div>
             </div>
           </div>
-          <div id="typeStats"></div>
+          <div id="typeStats" style="display: none;"></div>
         </div>
 
-        <!-- Próximas citas -->
+        <!-- Filtros - COLAPSADO -->
         <div class="sidebar-card">
-          <h3>⏰ Próximas</h3>
-          <div class="citas-list" id="citasList"></div>
+          <button onclick="const panel = document.getElementById('filtersPanel'); const btn = document.getElementById('limpiarBtn'); panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; btn.style.display = panel.style.display; this.textContent = panel.style.display === 'none' ? '▶ 🔍 Filtros' : '▼ 🔍 Filtros'" style="background: none; border: none; color: var(--text-primary); cursor: pointer; width: 100%; text-align: left; font-weight: 600; padding: 0; font-size: 16px;">▶ 🔍 Filtros</button>
+          <div class="filters-panel" id="filtersPanel" style="display: none; margin-top: 16px;">
+            <div class="filter-group">
+              <label>Tipo</label>
+              <div class="filter-options">
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-work"> 💼 Trabajo</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-personal"> 🏠 Personal</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-medical"> 🏥 Médica</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="type-other"> 📌 Otra</label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Fecha</label>
+              <div class="filter-options">
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-today"> Hoy</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-week"> Esta semana</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-month"> Este mes</label>
+                <label class="filter-option"><input type="checkbox" onchange="app.aplicarFiltros()" checked data-filter="date-future"> Próximas</label>
+              </div>
+            </div>
+          </div>
+          <button onclick="app.limpiarFiltros()" style="width: 100%; font-size: 12px; margin-top: 8px; display: none;" id="limpiarBtn">Limpiar filtros</button>
         </div>
       </div>
     </div>
