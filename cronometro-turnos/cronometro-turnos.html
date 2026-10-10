@@ -239,11 +239,7 @@
         }
 
         // Inicializar la app al cargar
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', showPlayers);
-        } else {
-            showPlayers();
-        }
+        window.addEventListener('load', showPlayers);
 
         function addPlayer() {
             const inp = document.getElementById('playerInput');
