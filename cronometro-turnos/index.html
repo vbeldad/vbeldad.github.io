@@ -352,6 +352,12 @@
                     timeLeft--;
                     if (timeLeft < 0) timeLeft = 0;
                     updateTimer();
+
+                    // Reproducir alarma cuando se acaba el tiempo
+                    if (timeLeft === 0) {
+                        playAlarm();
+                        startAlarmLoop();
+                    }
                 }
             }, 1000);
         }
