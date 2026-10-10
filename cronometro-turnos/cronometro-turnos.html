@@ -66,16 +66,6 @@
         .summary-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }
         .summary-item:last-child { border-bottom: none; }
         .summary-value { font-weight: bold; color: #3b82f6; }
-        .activation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .activation-modal.hidden { display: none; }
-        .activation-content { background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; padding: 40px; max-width: 400px; text-align: center; }
-        .activation-content h2 { font-size: 24px; margin-bottom: 10px; color: #3b82f6; }
-        .activation-content p { color: #94a3b8; margin-bottom: 25px; font-size: 14px; }
-        .activation-input { width: 100%; padding: 12px; margin-bottom: 15px; font-size: 16px; border: 2px solid #334155; background: #0f172a; color: #e2e8f0; border-radius: 4px; }
-        .activation-input:focus { outline: none; border-color: #3b82f6; }
-        .activation-btn { width: 100%; padding: 12px; font-size: 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-        .activation-btn:hover { background: #2563eb; }
-        .activation-error { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -194,16 +184,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE ACTIVACIÓN -->
-    <div id="activationModal" class="activation-modal hidden">
-        <div class="activation-content">
-            <h2>🔐 Activación</h2>
-            <p>Ingresa el código de activación para acceder</p>
-            <input type="password" id="activationCode" class="activation-input" placeholder="Código de activación" onkeypress="if(event.key==='Enter') checkActivation()">
-            <button class="activation-btn" onclick="checkActivation()">Activar</button>
-            <div class="activation-error" id="activationError">Código incorrecto. Intenta de nuevo.</div>
-        </div>
-    </div>
 
     <script>
         let players = [];
@@ -217,7 +197,6 @@
         let timerInterval = null;
         let gameHistory = [];
         
-        const ACTIVATION_CODE = 'Vbg08051963@';
         let alarmaSonada = false;
         let alarmInterval = null;
 
@@ -227,16 +206,16 @@
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                
+
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                
+
                 oscillator.frequency.value = 1000; // Frecuencia más alta
                 oscillator.type = 'square'; // Onda cuadrada para más volumen
-                
+
                 gainNode.gain.setValueAtTime(0.9, audioContext.currentTime); // Volumen máximo
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
+
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (e) {
@@ -259,39 +238,11 @@
             alarmInterval = null;
         }
 
-        function checkActivation() {
-            const code = document.getElementById('activationCode').value;
-            if (code === ACTIVATION_CODE) {
-                localStorage.setItem('cronometro-activado', 'true');
-                document.getElementById('activationModal').classList.add('hidden');
-                document.getElementById('activationCode').value = '';
-                showPlayers(); // Mostrar la pantalla de setup
-            } else {
-                document.getElementById('activationError').style.display = 'block';
-                document.getElementById('activationCode').value = '';
-                document.getElementById('activationCode').focus();
-                setTimeout(() => {
-                    document.getElementById('activationError').style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // Verificar activación al cargar
-        function initActivation() {
-            if (localStorage.getItem('cronometro-activado') !== 'true') {
-                document.getElementById('activationModal').classList.remove('hidden');
-                document.getElementById('activationCode').focus();
-            } else {
-                // Si ya está activada, mostrar la pantalla de setup
-                showPlayers();
-            }
-        }
-
-        // Ejecutar al cargar
+        // Inicializar la app al cargar
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initActivation);
+            document.addEventListener('DOMContentLoaded', showPlayers);
         } else {
-            initActivation();
+            showPlayers();
         }
 
         function addPlayer() {
