@@ -127,15 +127,16 @@
 
         <!-- JUEGO -->
         <div id="gamePhase" class="hidden">
-            <div class="section game-display">
-                <div style="font-size: 14px; color: #94a3b8; margin-bottom: 10px;" id="gameNum">Juego 1</div>
-                <div style="font-size: 18px; color: #94a3b8; margin-bottom: 20px; text-transform: uppercase;" id="playerName">Jugador</div>
-                <div class="timer" id="timer">00:00</div>
+            <div class="section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div id="gamePlayerCards"></div>
+            </div>
+
+            <div style="text-align: center; font-size: 13px; color: #94a3b8; margin-bottom: 20px;">
+                📌 Toca un reloj para cambiar de jugador | Juego <span id="gameNum">1</span>
             </div>
 
             <div class="controls">
                 <button id="pauseBtn" onclick="togglePause()" style="background: #f59e0b;">Pausar</button>
-                <button onclick="nextPlayer()">Siguiente</button>
                 <button class="danger" onclick="finishGame()">Terminar juego</button>
             </div>
         </div>
@@ -364,14 +365,7 @@
         }
 
         function updateTimer() {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            const t = document.getElementById('timer');
-            t.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            t.className = 'timer';
-            if (timeLeft > timeLimit * 0.3) return;
-            if (timeLeft > 0) t.style.color = '#f59e0b';
-            else t.style.color = '#ef4444';
+            updateGameDisplay();
         }
 
         function togglePause() {
@@ -380,19 +374,39 @@
         }
 
         function nextPlayer() {
-            stopAlarmLoop();
-            current = (current + 1) % players.length;
-            timeLeft = timeLimit;
-            paused = false;
-            document.getElementById('pauseBtn').textContent = 'Pausar';
-            updateGame();
+            changeGamePlayer((current + 1) % players.length);
         }
 
         function updateGame() {
-            document.getElementById('gameNum').textContent = `Juego ${gameNum}`;
+            document.getElementById('gameNum').textContent = gameNum;
             document.getElementById('gameNum2').textContent = gameNum;
-            document.getElementById('playerName').textContent = players[current].name;
-            updateTimer();
+            updateGameDisplay();
+        }
+
+        function updateGameDisplay() {
+            const container = document.getElementById('gamePlayerCards');
+            const columns = players.length === 2 ? '1fr 1fr' : `repeat(${Math.min(players.length, 3)}, 1fr)`;
+            container.parentElement.style.gridTemplateColumns = columns;
+            container.innerHTML = players.map((p, i) => {
+                const isActive = i === current;
+                const cardClass = isActive ? 'chess-player-card active' : 'chess-player-card';
+                return `
+                    <div class="${cardClass}" onclick="changeGamePlayer(${i})">
+                        <div class="chess-name">${p.name}</div>
+                        <div class="chess-timer" style="color: ${timeLeft === 0 ? '#ef4444' : (isActive ? '#10b981' : '#3b82f6')}">${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}</div>
+                        <div style="font-size: 12px; color: #64748b;">${isActive ? '⏱️ Jugando' : ''}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function changeGamePlayer(i) {
+            stopAlarmLoop();
+            current = i;
+            timeLeft = timeLimit;
+            paused = false;
+            document.getElementById('pauseBtn').textContent = 'Pausar';
+            updateGameDisplay();
         }
 
         function finishGame() {
