@@ -134,7 +134,7 @@
             </div>
 
             <div class="controls">
-                <button id="pauseBtn" onclick="togglePause()">Pausar</button>
+                <button id="pauseBtn" onclick="togglePause()" style="background: #f59e0b;">Pausar</button>
                 <button onclick="nextPlayer()">Siguiente</button>
                 <button class="danger" onclick="finishGame()">Terminar juego</button>
             </div>
@@ -215,6 +215,7 @@
             </div>
 
             <div class="controls" style="justify-content: center;">
+                <button id="chessPauseBtn" onclick="toggleChessPause()" style="background: #f59e0b; min-width: 140px; padding: 12px;">Pausar</button>
                 <button class="danger" style="min-width: 140px; padding: 12px;" onclick="stopChessGame()">Terminar</button>
             </div>
         </div>
@@ -594,6 +595,7 @@
         let chessPlaying = false;
         let chessMode = false;
         let chessInterval = null;
+        let chessPaused = false;
 
         function selectMode(mode) {
             if (mode === 'none') {
@@ -676,11 +678,11 @@
             if (chessInterval) clearInterval(chessInterval);
             updateChessDisplay();
             chessInterval = setInterval(() => {
-                if (chessPlaying && chessTimeLeft[chessCurrentPlayer] > 0) {
+                if (chessPlaying && !chessPaused && chessTimeLeft[chessCurrentPlayer] > 0) {
                     chessTimeLeft[chessCurrentPlayer]--;
                     updateChessDisplay();
                 }
-                if (chessTimeLeft[chessCurrentPlayer] === 0 && chessPlaying) {
+                if (chessTimeLeft[chessCurrentPlayer] === 0 && chessPlaying && !chessPaused) {
                     playAlarm();
                     startAlarmLoop();
                 }
@@ -712,6 +714,14 @@
             stopAlarmLoop();
             chessCurrentPlayer = i;
             updateChessDisplay();
+        }
+
+        function toggleChessPause() {
+            chessPaused = !chessPaused;
+            document.getElementById('chessPauseBtn').textContent = chessPaused ? 'Reanudar' : 'Pausar';
+            if (chessPaused) {
+                stopAlarmLoop();
+            }
         }
 
         function stopChessGame() {
