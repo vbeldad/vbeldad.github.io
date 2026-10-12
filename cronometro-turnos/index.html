@@ -411,7 +411,8 @@
 
         function finishGame() {
             playing = false;
-            clearInterval(timerInterval);
+            if (timerInterval) clearInterval(timerInterval);
+            stopAlarmLoop();
             document.getElementById('gamePhase').classList.add('hidden');
             document.getElementById('scoringPhase').classList.remove('hidden');
             updateScoringScreen();
@@ -458,9 +459,13 @@
         }
 
         function nextGameStart() {
+            if (timerInterval) clearInterval(timerInterval);
+            stopAlarmLoop();
             gameNum++;
+            current = 0;
             timeLeft = timeLimit;
             paused = false;
+            document.getElementById('pauseBtn').textContent = 'Pausar';
             document.getElementById('betweenModal').classList.add('hidden');
             document.getElementById('gamePhase').classList.remove('hidden');
             updateGame();
